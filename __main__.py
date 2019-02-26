@@ -35,7 +35,7 @@ if __name__ == '__main__':
     while True:
         try:
             bi = battery_info()
-            if bi['status'] == 'discharging' and (bi['percent'] <= 6 or bi['remaining'] <= 10):
+            if bi['status'] == 'discharging' and (bi['percent'] <= 6 or (bi['remaining'] is not None and bi['remaining'] <= 10)):
                 sleep()
             time.sleep(120)
         except:
