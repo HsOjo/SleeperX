@@ -1,7 +1,7 @@
 LANGUAGE = {
     'en': {
         'description_about':
-            'Mac Sleeper\n\n'
+            'SleeperX\n\n'
             'Auto sleep for hackintosh. \n'
             'Protect low battery capacity force shutdown.\n\n'
             'Develop by HsOjo.\n'
@@ -41,7 +41,7 @@ LANGUAGE = {
     },
     'cn': {
         'description_about':
-            'Mac Sleeper\n\n'
+            'SleeperX\n\n'
             '在黑苹果实现自动睡眠功能。\n'
             '可以有效防止电池电量不足，导致直接断电关机。\n\n'
             '由HsOjo开发。\n'
