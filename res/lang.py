@@ -1,5 +1,7 @@
 LANGUAGE = {
     'en': {
+        'unknown': '未知',
+
         'description_about':
             'SleeperX\n\n'
             'Auto sleep for hackintosh. \n'
@@ -38,8 +40,16 @@ LANGUAGE = {
         'view_remaining': 'Remaining: %s',
         'view_remaining_time': '%d minutes',
         'view_remaining_counting': '(counting...)',
+
+        'status_charging': {
+            'not charging': 'not charging',
+            'discharging': 'discharging',
+            'charging': 'charging',
+        },
     },
     'cn': {
+        'unknown': '未知',
+
         'description_about':
             'SleeperX\n\n'
             '在黑苹果实现自动睡眠功能。\n'
@@ -78,5 +88,11 @@ LANGUAGE = {
         'view_remaining': '剩余时间: %s',
         'view_remaining_time': '%d 分钟',
         'view_remaining_counting': '(计算中...)',
+
+        'status_charging': {
+            'not charging': '未在充电',
+            'discharging': '正在放电',
+            'charging': '正在充电',
+        },
     },
 }

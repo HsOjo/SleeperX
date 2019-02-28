@@ -89,7 +89,8 @@ class SleeperApp:
                                 self.lang['view_percent'] % battery_info['percent'])
 
             self.set_menu_title('view_status',
-                                self.lang['view_status'] % battery_info['status'])
+                                self.lang['view_status'] % (
+                                    self.lang['status_charging'].get(battery_info['status'], self.lang['unknown'])))
 
             self.set_menu_title('view_remaining',
                                 self.lang['view_remaining'] % (
