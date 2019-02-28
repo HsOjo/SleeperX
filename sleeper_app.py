@@ -136,7 +136,7 @@ class SleeperApp:
     def set_language(self, sender: rumps.MenuItem):
         content = common.gui_input(sender.title, self.lang['description_set_language'],
                                    self.config.get('language', 'en'))
-        if content is not None:
+        if isinstance(content, str) and content in LANGUAGE:
             self.config['language'] = content
             self.save_config()
 
