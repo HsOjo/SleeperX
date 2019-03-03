@@ -1,7 +1,6 @@
 import base64
 import json
 import os
-import traceback
 
 import rumps
 
@@ -80,7 +79,7 @@ class SleeperApp:
             menu = self.menu[name]
             menu['callback'](menu['object'])
         except:
-            traceback.print_exc()
+            self.callback_exception()
 
     def callback_refresh(self, sender: rumps.Timer):
         try:
@@ -103,7 +102,10 @@ class SleeperApp:
                      battery_info['remaining'] <= self.config['low_time_remaining'])):
                 common.sleep(user=self.config['username'], pwd=self.config['password'])
         except:
-            traceback.print_exc()
+            self.callback_exception()
+
+    def callback_exception(self):
+        common.alert(self.lang['title_crash'], common.get_exception())
 
     def set_low_battery_capacity(self, sender: rumps.MenuItem):
         content = common.gui_input(sender.title, self.lang['description_set_low_battery_capacity'],
@@ -145,7 +147,7 @@ class SleeperApp:
         common.sleep(user=self.config['username'], pwd=self.config['password'])
 
     def about(self, sender: rumps.MenuItem):
-        common.gui_input(sender.title, self.lang['description_about'], CONST['github_page'])
+        common.gui_input(sender.title, self.lang['description_about'] % CONST['version'], CONST['github_page'])
 
     def run(self):
         t = rumps.Timer(self.callback_refresh, 1)

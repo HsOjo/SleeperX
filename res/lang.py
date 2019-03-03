@@ -3,7 +3,7 @@ LANGUAGE = {
         'unknown': '未知',
 
         'description_about':
-            'SleeperX\n\n'
+            'SleeperX Version %s\n\n'
             'Auto sleep for hackintosh. \n'
             'Protect low battery capacity force shutdown.\n\n'
             'Develop by HsOjo.\n'
@@ -46,12 +46,14 @@ LANGUAGE = {
             'discharging': 'discharging',
             'charging': 'charging',
         },
+
+        'title_crash': 'Application Crash',
     },
     'cn': {
         'unknown': '未知',
 
         'description_about':
-            'SleeperX\n\n'
+            'SleeperX 版本 %s\n\n'
             '在黑苹果实现自动睡眠功能。\n'
             '可以有效防止电池电量不足，导致直接断电关机。\n\n'
             '由HsOjo开发。\n'
@@ -94,5 +96,7 @@ LANGUAGE = {
             'discharging': '正在放电',
             'charging': '正在充电',
         },
+
+        'title_crash': '应用崩溃',
     },
 }

@@ -11,7 +11,10 @@ def popen(cmd):
 
 def osascript_run(applescript: str):
     try:
-        p = popen('/usr/bin/osascript -e "%s"' % applescript.replace('"', '\\"'))
+        applescript = applescript.replace('"', '\\"')
+        applescript = applescript.replace('\\\\"', '"')
+
+        p = popen('/usr/bin/osascript -e "%s"' % applescript)
         out = p.stdout.read()
         err = p.stderr.read()
         return p.wait(), out, err
@@ -75,5 +78,45 @@ def gui_input(title, description, default='', hidden=False):
     if out != '':
         reg = re.compile('text returned:(.*)')
         [content] = reg.findall(out)
+
+    return content
+
+
+def alert(title='', description=''):
+    title = title.replace('"', '\\"')
+    description = description.replace('"', '\\"')
+
+    [stat, out, err] = osascript_run(
+        'display dialog "%s" with title "%s"' % (description, title)
+    )
+
+    return stat == 0
+
+
+def set_login_startup(name, path, hidden=False):
+    name = name.replace('"', '\\"')
+    path = path.replace('"', '\\"')
+
+    [stat, out, err] = osascript_run(
+        'tell application "System Events" to make new login item with properties { name: "%s", path: "%s", hidden: %s }' %
+        (name, path, hidden)
+    )
+
+    if out == 'login item %s' % name:
+        return True
+    else:
+        return False
+
+
+def set_sleep_mode(mode, **kwargs):
+    if mode in [0, 3, 25]:
+        run_as_admin('pmset hibernatemode %d' % mode, **kwargs)
+
+
+def get_exception():
+    with StringIO() as io:
+        traceback.print_exc(file=io)
+        io.seek(0)
+        content = io.read()
 
     return content
