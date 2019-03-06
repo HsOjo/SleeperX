@@ -35,6 +35,7 @@ class Application:
             add_menu('view_remaining'),
             rumps.separator,
             add_menu('sleep_now', self.lang['menu_sleep_now'], self.sleep_now),
+            add_menu('set_sleep_mode', self.lang['menu_set_sleep_mode'], self.set_sleep_mode),
             rumps.separator,
             add_menu('set_low_battery_capacity', self.lang['menu_set_low_battery_capacity'],
                      self.set_low_battery_capacity),
@@ -145,16 +146,49 @@ class Application:
             self.save_config()
 
     def set_language(self, sender: rumps.MenuItem):
-        content = osa_api.dialog_input(sender.title, self.lang['description_set_language'],
-                                       self.config.get('language', 'en'))
-        if isinstance(content, str) and content in LANGUAGE:
-            self.config['language'] = content
-            self.save_config()
+        items = []
+        for k in LANGUAGE:
+            items.append(LANGUAGE[k]['l_this'])
+
+        index = osa_api.choose_from_list(sender.title, LANGUAGE['en']['description_set_language'], items)
+        if index is not None:
+            language = None
+            description = items[index]
+            for k, v in LANGUAGE.items():
+                if description == v['l_this']:
+                    language = k
+                    break
+
+            if language is not None:
+                self.config['language'] = language
+                self.save_config()
+
+                [_, path] = common.get_application_info()
+                system_api.open_url(path, True)
+                self.quit()
 
     def set_startup(self, sender: rumps.MenuItem):
         res = osa_api.alert(sender.title, self.lang['description_set_startup'])
         if res:
             osa_api.set_login_startup(*common.get_application_info())
+
+    def set_sleep_mode(self, sender: rumps.MenuItem):
+        info = system_api.sleep_info()
+        items = [self.lang['sleep_mode_0'], self.lang['sleep_mode_3'], self.lang['sleep_mode_25']]
+        items_value = {
+            0: 0,
+            1: 3,
+            2: 25,
+        }
+        default = None
+        for k, v in items_value.items():
+            if v == info['hibernatemode']:
+                default = k
+        res = osa_api.dialog_select(sender.title, self.lang['description_set_sleep_mode'] % info['hibernatemode'],
+                                    items, default)
+        mode = items_value.get(res)
+        if mode is not None:
+            system_api.set_sleep_mode(mode, user=self.config['username'], pwd=self.config['password'])
 
     def sleep_now(self, sender: rumps.MenuItem):
         system_api.sleep(user=self.config['username'], pwd=self.config['password'])
@@ -162,29 +196,33 @@ class Application:
     def about(self, sender: rumps.MenuItem):
         osa_api.dialog_input(sender.title, self.lang['description_about'] % CONST['version'], CONST['github_page'])
 
-    def quit(self, sender: rumps.MenuItem):
+    def quit(self, sender: rumps.MenuItem = None):
         rumps.quit_application()
 
-    def t_check_update(self, sender=None):
+    def t_check_update(self, sender: rumps.MenuItem = None):
         Thread(target=self.check_update, args=(sender,)).start()
 
     def check_update(self, sender: rumps.MenuItem):
-        have_new = False
-        rs = github.get_releases(CONST['releases_url'])
-        for r in rs:
-            if common.compare_version(CONST['version'], r['title']):
-                have_new = True
-                rumps.notification(
-                    self.lang['noti_update_version'] % r['title'],
-                    self.lang['noti_update_time'] % r['datetime'],
-                    r['description']
-                )
-                if sender is not None:
-                    system_api.open_url(r['url'])
-                break
+        try:
+            have_new = False
+            rs = github.get_releases(CONST['releases_url'], timeout=5)
+            for r in rs:
+                if common.compare_version(CONST['version'], r['title']):
+                    have_new = True
+                    rumps.notification(
+                        self.lang['noti_update_version'] % r['title'],
+                        self.lang['noti_update_time'] % r['datetime'],
+                        r['description']
+                    )
+                    if sender is not None:
+                        system_api.open_url(r['url'])
+                    break
 
-        if sender is not None and have_new is False:
-            rumps.notification(sender.title, self.lang['noti_update_none'], self.lang['noti_update_star'])
+            if sender is not None and have_new is False:
+                rumps.notification(sender.title, self.lang['noti_update_none'], self.lang['noti_update_star'])
+        except:
+            if sender is not None:
+                rumps.notification(sender.title, '', self.lang['noti_network_error'])
 
     def run(self):
         t = rumps.Timer(self.callback_refresh, 1)

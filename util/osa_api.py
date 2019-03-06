@@ -37,7 +37,7 @@ def dialog_select(title, description, buttons: list, default=None):
     if default is None:
         default = len(buttons)
     elif isinstance(default, int):
-        default -= 1
+        default += 1
     else:
         default = ObjectConvertor.to_object(default)
 
@@ -69,7 +69,7 @@ def alert(title='', description=''):
     return stat == 0
 
 
-def choose_from_list(title, items: list, description, multi=False):
+def choose_from_list(title, description, items: list, multi=False):
     title = ObjectConvertor.to_object(title)
     description = ObjectConvertor.to_object(description)
     multi = ObjectConvertor.to_object(multi)
@@ -82,6 +82,7 @@ def choose_from_list(title, items: list, description, multi=False):
         (items, title, description, multi)
     )
 
+    out = out.strip()
     index = None
     if out != '':
         if out in check:
