@@ -1,6 +1,6 @@
 LANGUAGE = {
     'en': {
-        'unknown': '未知',
+        'unknown': 'unknown',
 
         'description_about':
             'SleeperX Version %s\n\n'
@@ -26,6 +26,12 @@ LANGUAGE = {
         'description_set_language':
             'Options: en,cn\n'
             '(Restart app need.)',
+        'description_crash':
+            'Oops! Application Crash!\n'
+            'Submit the below message to issue, please.\n\n%s',
+        'description_set_startup':
+            'Do you want to set startup this app on login?\n'
+            '(You can cancel it on `System Preferences` - `User or Group account` - `Login items`)',
 
         'menu_sleep_now': 'Sleep Now',
         'menu_set_low_battery_capacity': 'Set Low Battery Capacity',
@@ -33,7 +39,10 @@ LANGUAGE = {
         'menu_set_password': 'Set Admin Password',
         'menu_set_username': 'Set Admin Username (optional)',
         'menu_set_language': 'Set Language',
+        'menu_set_startup': 'Set Login Startup',
+        'menu_check_update': 'Check Update',
         'menu_about': 'About',
+        'menu_quit': 'Quit',
 
         'view_percent': 'Battery Capacity: %d%%',
         'view_status': 'Status: %s',
@@ -45,9 +54,15 @@ LANGUAGE = {
             'not charging': 'not charging',
             'discharging': 'discharging',
             'charging': 'charging',
+            'charged': 'charged',
         },
 
         'title_crash': 'Application Crash',
+
+        'noti_update_version': 'Found update: %s',
+        'noti_update_time': 'Release Time: %s',
+        'noti_update_none': 'Current is the newest version.',
+        'noti_update_star': '(If you love this app, give me a star on github, thanks.)',
     },
     'cn': {
         'unknown': '未知',
@@ -76,6 +91,12 @@ LANGUAGE = {
         'description_set_language':
             '选项: en,cn\n'
             '(需要重启App。)',
+        'description_crash':
+            '卧槽! 程序崩溃了!\n'
+            '请将以下消息提交到issues，谢谢配合。\n\n%s',
+        'description_set_startup':
+            '你确定要将该应用添加到登陆启动项吗？\n'
+            '(你可以在 `系统偏好设置` - `用户与群组` - `登陆项`取消。)',
 
         'menu_sleep_now': '立即睡眠',
         'menu_set_low_battery_capacity': '设置低电量临界值',
@@ -83,7 +104,10 @@ LANGUAGE = {
         'menu_set_password': '设置管理员用户密码',
         'menu_set_username': '设置管理员用户名 (可选)',
         'menu_set_language': '设置语言',
+        'menu_set_startup': '设置登陆启动',
+        'menu_check_update': '检查更新',
         'menu_about': '关于',
+        'menu_quit': '退出',
 
         'view_percent': '剩余电量: %d%%',
         'view_status': '充电状态: %s',
@@ -95,8 +119,14 @@ LANGUAGE = {
             'not charging': '未在充电',
             'discharging': '正在放电',
             'charging': '正在充电',
+            'charged': '已充满',
         },
 
         'title_crash': '应用崩溃',
+
+        'noti_update_version': '发现新版本: %s',
+        'noti_update_time': '发布时间: %s',
+        'noti_update_none': '当前已是最新版本。',
+        'noti_update_star': '（如果你喜欢这个应用，请在github给我个star，thanks。）',
     },
 }

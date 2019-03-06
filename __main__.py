@@ -1,3 +1,9 @@
-from sleeper_app import SleeperApp
+import sys
+from io import StringIO
 
-SleeperApp().run()
+from app import Application
+
+if getattr(sys, 'frozen', False):
+    sys.stdout = StringIO()
+
+Application().run()

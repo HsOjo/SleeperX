@@ -17,7 +17,7 @@ PS: You can build this app and append to login launch list.
 * Install Requirement.
 
 ```bash
-pip3 install rumps pyinstaller
+pip3 install rumps pyinstaller requests
 ```
 
 * Build
