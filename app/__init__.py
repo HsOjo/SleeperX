@@ -205,7 +205,7 @@ class Application:
         folder = osa_api.choose_folder(self.lang['title_export_log'])
         if folder is not None:
             log = common.extract_log().replace(self.config['password'], '[password]')
-            with open('%s/%s' % (folder, 'SleeperX_log.txt'), 'w') as io:
+            with open('%s/%s' % (folder, 'SleeperX_log.txt'), 'w', encoding='utf8') as io:
                 io.write(log)
 
     def quit(self, sender: rumps.MenuItem = None):
