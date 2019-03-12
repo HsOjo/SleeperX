@@ -91,6 +91,23 @@ def choose_from_list(title, description, items: list, multi=False):
     return index
 
 
+def choose_folder(title, multi=False):
+    title = ObjectConvertor.to_object(title)
+    multi = ObjectConvertor.to_object(multi)
+
+    [stat, out, err] = AppleScript.exec(
+        'choose folder with prompt %s multiple selections allowed %s' %
+        (title, multi)
+    )
+
+    out = out.strip()  # type: str
+    folder = None
+    if out != '':
+        folder = out[out.find(':'):].replace(':', '/')
+
+    return folder
+
+
 def set_login_startup(name, path, hidden=False):
     prop = {
         'name': name,

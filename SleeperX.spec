@@ -32,5 +32,5 @@ exe = EXE(pyz,
           console=False )
 app = BUNDLE(exe,
              name='SleeperX.app',
-             icon=None,
+             icon='./res/icon.icns',
              bundle_identifier=None)

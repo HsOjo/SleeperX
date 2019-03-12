@@ -27,8 +27,8 @@ LANGUAGE = {
         'description_set_language':
             'Select your language.',
         'description_crash':
-            'Oops! Application Crash!\n'
-            'Submit the below message to issue, please.\n\n%s',
+            'Oops! Application(SleeperX) Crash!\n'
+            'Will export log later. Send the log file to Developer, please.',
         'description_set_startup':
             'Do you want to set startup this app on login?\n'
             '(You can cancel it on `System Preferences` - `User or Group account` - `Login items`)',
@@ -73,6 +73,7 @@ LANGUAGE = {
         },
 
         'title_crash': 'Application Crash',
+        'title_export_log': 'Export Log File',
 
         'noti_update_version': 'Found update: %s',
         'noti_update_time': 'Release Time: %s',
@@ -110,8 +111,8 @@ LANGUAGE = {
             '当电量百分比不足该值，将执行睡眠命令。\n'
             '(只在非充电状态有效。)',
         'description_crash':
-            '卧槽! 程序崩溃了!\n'
-            '请将以下消息提交到issues，谢谢配合。\n\n%s',
+            '卧槽! SleeperX崩溃了!\n'
+            '接下来将导出日志，请将日志提交给开发者，谢谢配合。',
         'description_set_startup':
             '你确定要将该应用添加到登陆启动项吗？\n'
             '(你可以在 `系统偏好设置` - `用户与群组` - `登陆项`取消。)',
@@ -156,6 +157,7 @@ LANGUAGE = {
         },
 
         'title_crash': '应用崩溃',
+        'title_export_log': '导出日志文件',
 
         'noti_update_version': '发现新版本: %s',
         'noti_update_time': '发布时间: %s',

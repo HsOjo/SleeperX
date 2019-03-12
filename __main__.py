@@ -1,9 +1,9 @@
 import sys
-from io import StringIO
 
+import common
 from app import Application
 
 if getattr(sys, 'frozen', False):
-    sys.stdout = StringIO()
+    sys.stdout = common.io_log
 
 Application().run()

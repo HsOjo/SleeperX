@@ -4,6 +4,8 @@ import sys
 import traceback
 from io import StringIO
 
+io_log = StringIO()
+
 
 def popen(cmd):
     return subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -50,3 +52,11 @@ def compare_version(a: str, b: str, ex=False):
         return False
     else:
         return int(sa[0].replace('.', '')) < int(sb[0].replace('.', ''))
+
+
+def extract_log():
+    if isinstance(io_log, StringIO):
+        io_log.seek(0)
+        log = io_log.read()
+        io_log.seek(0, 2)
+        return log

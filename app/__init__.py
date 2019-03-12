@@ -83,6 +83,7 @@ class Application:
 
     def callback_menu(self, name):
         try:
+            print('[Menu] Click %s.' % name)
             menu = self.menu[name]
             menu['callback'](menu['object'])
         except:
@@ -113,8 +114,9 @@ class Application:
 
     def callback_exception(self):
         exc = common.get_exception()
-        print(exc)
-        osa_api.alert(self.lang['title_crash'], self.lang['description_crash'] % exc)
+        print('[Exception] %s' % exc)
+        if osa_api.alert(self.lang['title_crash'], self.lang['description_crash']):
+            self.export_log()
 
     def set_low_battery_capacity(self, sender: rumps.MenuItem):
         content = osa_api.dialog_input(sender.title, self.lang['description_set_low_battery_capacity'],
@@ -194,7 +196,17 @@ class Application:
         system_api.sleep(user=self.config['username'], pwd=self.config['password'])
 
     def about(self, sender: rumps.MenuItem):
-        osa_api.dialog_input(sender.title, self.lang['description_about'] % CONST['version'], CONST['github_page'])
+        res = osa_api.dialog_input(sender.title, self.lang['description_about'] % CONST['version'],
+                                   CONST['github_page'])
+        if res == ':export log':
+            self.export_log()
+
+    def export_log(self):
+        folder = osa_api.choose_folder(self.lang['title_export_log'])
+        if folder is not None:
+            log = common.extract_log().replace(self.config['password'], '[password]')
+            with open('%s/%s' % (folder, 'SleeperX_log.txt'), 'w') as io:
+                io.write(log)
 
     def quit(self, sender: rumps.MenuItem = None):
         rumps.quit_application()
@@ -225,6 +237,7 @@ class Application:
                 rumps.notification(sender.title, '', self.lang['noti_network_error'])
 
     def run(self):
+        print('[Version] %s' % CONST['version'])
         t = rumps.Timer(self.callback_refresh, 1)
         t.start()
         self.app.run()
