@@ -2,6 +2,8 @@ LANGUAGE = {
     'en': {
         'l_this': 'English',
         'unknown': 'unknown',
+        'cancel': 'Cancel',
+        'ok': 'OK',
 
         'description_about':
             'SleeperX Version %s\n\n'
@@ -45,6 +47,7 @@ LANGUAGE = {
             'The system will restore from disk image. \n'
             'If you want "hiberna-tion" - slower sleeps, slower wakes, and better battery life, you should use this setting.\n'
             '\n'
+            '(Only test on macOS 10.14 successful, 10.13- old version maybe different.)\n\n'
             'Current Mode: %s',
 
         'menu_sleep_now': 'Sleep Now',
@@ -88,6 +91,8 @@ LANGUAGE = {
     'cn': {
         'l_this': '中文',
         'unknown': '未知',
+        'cancel': '取消',
+        'ok': '确定',
 
         'description_about':
             'SleeperX 版本 %s\n\n'
@@ -129,6 +134,7 @@ LANGUAGE = {
             '系统将内存的副本存储到持久存储（磁盘），并将切断内存的电源。\n'
             '如果你想要“休眠”——睡眠会更慢，唤醒会更慢，但电池寿命越长，你应该使用这个设置。\n'
             '\n'
+            '(仅在macOS 10.14测试成功, 10.13以下的老版本情况会有所不同。)\n\n'
             '当前模式：%s',
 
         'menu_sleep_now': '立即睡眠',

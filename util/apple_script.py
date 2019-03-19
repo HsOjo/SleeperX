@@ -64,7 +64,6 @@ class AppleScript:
                 io.seek(0)
                 err = io.read()
 
-        if stat != 0:
-            print('code exec error:\nstatus: %d\nmsg: %s\ncode: %s' % (stat, err, code))
+        common.log(AppleScript.exec, 'AppleScript', {'code': code, 'status': stat, 'output': out, 'error': err})
 
         return stat, out, err

@@ -6,22 +6,26 @@ from util import osa_api
 
 
 def battery_info():
-    p = common.popen('/usr/bin/pmset -g ps')
-    msg = p.stdout.read()
+    try:
+        p = common.popen('/usr/bin/pmset -g ps')
+        msg = p.stdout.read()
 
-    reg = re.compile('(\d*%); (.*?); (.*?) present: ')
-    [res] = reg.findall(msg.replace('AC attached; not charging', 'not charging; (no estimate)'))
+        reg = re.compile('(\d*%); (.*?); (.*?) present: ')
+        [res] = reg.findall(msg.replace('AC attached; not charging', 'not charging; (no estimate)'))
 
-    remaining = res[2].replace(' remaining', '')
-    remaining = common.convert_minute(remaining) if remaining != '(no estimate)' else None
+        remaining = res[2].replace(' remaining', '')
+        remaining = common.convert_minute(remaining) if remaining != '(no estimate)' else None
 
-    info = {
-        'percent': int(res[0][:-1]),
-        'status': res[1],
-        'remaining': remaining,
-    }
+        info = {
+            'percent': int(res[0][:-1]),
+            'status': res[1],
+            'remaining': remaining,
+        }
 
-    return info
+        return info
+    except:
+        common.log(battery_info, 'Warning', common.get_exception())
+        return None
 
 
 def sleep(**kwargs):

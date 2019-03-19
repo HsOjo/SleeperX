@@ -83,7 +83,7 @@ class Application:
 
     def callback_menu(self, name):
         try:
-            print('[Menu] Click %s.' % name)
+            common.log(self.callback_menu, 'Info', 'Click %s.' % name)
             menu = self.menu[name]
             menu['callback'](menu['object'])
         except:
@@ -92,29 +92,31 @@ class Application:
     def callback_refresh(self, sender: rumps.Timer):
         try:
             battery_info = system_api.battery_info()
-            self.set_menu_title('view_percent',
-                                self.lang['view_percent'] % battery_info['percent'])
+            if battery_info is not None:
+                self.set_menu_title('view_percent',
+                                    self.lang['view_percent'] % battery_info['percent'])
 
-            self.set_menu_title('view_status',
-                                self.lang['view_status'] % (
-                                    self.lang['status_charging'].get(battery_info['status'], self.lang['unknown'])))
+                self.set_menu_title('view_status',
+                                    self.lang['view_status'] % (
+                                        self.lang['status_charging'].get(battery_info['status'], self.lang['unknown'])))
 
-            self.set_menu_title('view_remaining',
-                                self.lang['view_remaining'] % (
-                                    (self.lang['view_remaining_time'] % battery_info['remaining'])
-                                    if battery_info['remaining'] is not None else self.lang['view_remaining_counting']))
+                self.set_menu_title('view_remaining',
+                                    self.lang['view_remaining'] % (
+                                        (self.lang['view_remaining_time'] % battery_info['remaining'])
+                                        if battery_info['remaining'] is not None else self.lang[
+                                            'view_remaining_counting']))
 
-            if battery_info['status'] == 'discharging' and (
-                    battery_info['percent'] <= self.config['low_battery_capacity'] or
-                    (battery_info['remaining'] is not None and
-                     battery_info['remaining'] <= self.config['low_time_remaining'])):
-                system_api.sleep(user=self.config['username'], pwd=self.config['password'])
+                if battery_info['status'] == 'discharging' and (
+                        battery_info['percent'] <= self.config['low_battery_capacity'] or
+                        (battery_info['remaining'] is not None and
+                         battery_info['remaining'] <= self.config['low_time_remaining'])):
+                    system_api.sleep(user=self.config['username'], pwd=self.config['password'])
         except:
             self.callback_exception()
 
     def callback_exception(self):
         exc = common.get_exception()
-        print('[Exception] %s' % exc)
+        common.log(self.callback_exception, 'Error', exc)
         if osa_api.alert(self.lang['title_crash'], self.lang['description_crash']):
             self.export_log()
 
@@ -189,7 +191,7 @@ class Application:
         res = osa_api.dialog_select(sender.title, self.lang['description_set_sleep_mode'] % info['hibernatemode'],
                                     items, default)
         mode = items_value.get(res)
-        if mode is not None:
+        if mode is not None and mode != info['hibernatemode']:
             system_api.set_sleep_mode(mode, user=self.config['username'], pwd=self.config['password'])
 
     def sleep_now(self, sender: rumps.MenuItem):
@@ -218,6 +220,7 @@ class Application:
         try:
             have_new = False
             rs = github.get_releases(CONST['releases_url'], timeout=5)
+            common.log(self.check_update, 'Info', rs)
             for r in rs:
                 if common.compare_version(CONST['version'], r['title']):
                     have_new = True
@@ -233,11 +236,12 @@ class Application:
             if sender is not None and have_new is False:
                 rumps.notification(sender.title, self.lang['noti_update_none'], self.lang['noti_update_star'])
         except:
+            common.log(self.check_update, 'Warning', common.get_exception())
             if sender is not None:
                 rumps.notification(sender.title, '', self.lang['noti_network_error'])
 
     def run(self):
-        print('[Version] %s' % CONST['version'])
+        common.log(self.run, 'Info', 'version: %s' % CONST['version'])
         t = rumps.Timer(self.callback_refresh, 1)
         t.start()
         self.app.run()

@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import sys
@@ -60,3 +61,16 @@ def extract_log():
         log = io_log.read()
         io_log.seek(0, 2)
         return log
+
+
+def log(src, tag='Info', *args):
+    log_items = []
+    for i in args:
+        if isinstance(i, list) or isinstance(i, dict):
+            log_items.append(json.dumps(i, indent=4, ensure_ascii=False))
+        elif isinstance(i, tuple):
+            log_items.append(json.dumps(list(i), indent=4, ensure_ascii=False))
+        else:
+            log_items.append(i)
+
+    print('[%s] %s' % (tag, src.__name__), *log_items)
