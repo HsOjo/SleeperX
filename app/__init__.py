@@ -17,7 +17,7 @@ class Application:
     config = None  # type: dict
 
     def __init__(self):
-        self.load_config()
+        Application.load_config()
         Application.lang = LANGUAGE[self.config['language']]
 
         self.t_check_update()
@@ -58,14 +58,15 @@ class Application:
             self.app.menu[v['name']].title = v['title']
             del v['title']
 
-    def load_config(self):
+    @staticmethod
+    def load_config():
         try:
-            with open(self.CONFIG_FILE, 'r', encoding='utf8') as io:
+            with open(Application.CONFIG_FILE, 'r', encoding='utf8') as io:
                 config = json.load(io)
                 config['password'] = base64.b64decode(config['password'][::-1].encode()).decode()
-                self.config = config
+                Application.config = config
         except FileNotFoundError:
-            self.config = {
+            Application.config = {
                 'username': '',
                 'password': '',
                 'language': 'en',
@@ -73,9 +74,10 @@ class Application:
                 'low_time_remaining': 10
             }
 
-    def save_config(self):
-        with open(self.CONFIG_FILE, 'w', encoding='utf8') as io:
-            config = self.config.copy()
+    @staticmethod
+    def save_config():
+        with open(Application.CONFIG_FILE, 'w', encoding='utf8') as io:
+            config = Application.config.copy()
             config['password'] = base64.b64encode(config['password'].encode()).decode()[::-1]
             json.dump(config, io, indent='  ')
 

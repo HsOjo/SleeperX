@@ -58,7 +58,6 @@ def compare_version(a: str, b: str, ex=False):
 
 
 def extract_log():
-    log = ''
     if isinstance(io_log, StringIO):
         io_log.seek(0)
         log = io_log.read()
