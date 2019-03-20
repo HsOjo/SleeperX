@@ -4,8 +4,10 @@ import subprocess
 import sys
 import traceback
 from io import StringIO
+from threading import Lock
 
 io_log = StringIO()
+lock_log = Lock()
 
 
 def popen(cmd):
@@ -56,11 +58,12 @@ def compare_version(a: str, b: str, ex=False):
 
 
 def extract_log():
+    log = ''
     if isinstance(io_log, StringIO):
         io_log.seek(0)
         log = io_log.read()
         io_log.seek(0, 2)
-        return log
+    return log
 
 
 def log(src, tag='Info', *args):
@@ -73,4 +76,10 @@ def log(src, tag='Info', *args):
         else:
             log_items.append(i)
 
-    print('[%s] %s' % (tag, src.__name__), *log_items)
+    if isinstance(src, str):
+        source = src
+    else:
+        source = src.__name__
+
+    with lock_log:
+        print('[%s] %s' % (tag, source), *log_items)

@@ -13,14 +13,15 @@ from util import osa_api, system_api, github
 
 class Application:
     CONFIG_FILE = os.path.expanduser('~/Library/Application Support/com.hsojo.sleeperx')
+    lang = None  # type: dict
+    config = None  # type: dict
 
     def __init__(self):
-        self.config = {}
         self.load_config()
-        self.lang = LANGUAGE[self.config['language']]
+        Application.lang = LANGUAGE[self.config['language']]
 
         self.t_check_update()
-        self.app = rumps.App('SleeperX', quit_button=None)
+        self.app = rumps.App(CONST['app_name'], quit_button=None)
         self.menu = {}
 
         def add_menu(name, title='', callback=None):
@@ -114,11 +115,12 @@ class Application:
         except:
             self.callback_exception()
 
-    def callback_exception(self):
+    @staticmethod
+    def callback_exception():
         exc = common.get_exception()
-        common.log(self.callback_exception, 'Error', exc)
-        if osa_api.alert(self.lang['title_crash'], self.lang['description_crash']):
-            self.export_log()
+        common.log(Application.callback_exception, 'Error', exc)
+        if osa_api.alert(Application.lang['title_crash'], Application.lang['description_crash']):
+            Application.export_log()
 
     def set_low_battery_capacity(self, sender: rumps.MenuItem):
         content = osa_api.dialog_input(sender.title, self.lang['description_set_low_battery_capacity'],
@@ -203,14 +205,16 @@ class Application:
         if res == ':export log':
             self.export_log()
 
-    def export_log(self):
-        folder = osa_api.choose_folder(self.lang['title_export_log'])
+    @staticmethod
+    def export_log():
+        folder = osa_api.choose_folder(Application.lang['title_export_log'])
         if folder is not None:
-            log = common.extract_log().replace(self.config['password'], '[password]')
+            log = common.extract_log().replace(Application.config['password'], CONST['pwd_hider'])
             with open('%s/%s' % (folder, 'SleeperX_log.txt'), 'w', encoding='utf8') as io:
                 io.write(log)
 
-    def quit(self, sender: rumps.MenuItem = None):
+    @staticmethod
+    def quit(sender: rumps.MenuItem = None):
         rumps.quit_application()
 
     def t_check_update(self, sender: rumps.MenuItem = None):

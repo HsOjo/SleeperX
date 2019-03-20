@@ -6,4 +6,7 @@ from app import Application
 if getattr(sys, 'frozen', False):
     sys.stdout = common.io_log
 
-Application().run()
+try:
+    Application().run()
+except:
+    Application.callback_exception()
