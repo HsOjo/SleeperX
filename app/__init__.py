@@ -21,7 +21,6 @@ class Application:
         Application.load_config()
         Application.lang = LANGUAGE[self.config['language']]
 
-        self.t_check_update()
         self.app = rumps.App(CONST['app_name'], quit_button=None)
         self.busy_work = BusyWork()
         self.menu = {}
@@ -246,7 +245,7 @@ class Application:
     def t_check_update(self, sender: rumps.MenuItem = None):
         Thread(target=self.check_update, args=(sender,)).start()
 
-    def check_update(self, sender: rumps.MenuItem):
+    def check_update(self, sender):
         try:
             release = github.get_latest_release(CONST['author'], CONST['app_name'], timeout=5)
             common.log(self.check_update, 'Info', release)
@@ -258,23 +257,25 @@ class Application:
                     release['body'],
                 )
 
-                if sender is not None:
+                if isinstance(sender, rumps.MenuItem):
                     if len(release['assets']) > 0:
                         system_api.open_url(release['assets'][0]['browser_download_url'])
                     else:
                         system_api.open_url('html_url')
             else:
-                if sender is not None:
+                if isinstance(sender, rumps.MenuItem):
                     rumps.notification(sender.title, self.lang['noti_update_none'], self.lang['noti_update_star'])
         except:
             common.log(self.check_update, 'Warning', common.get_exception())
-            if sender is not None:
+            if isinstance(sender, rumps.MenuItem):
                 rumps.notification(sender.title, '', self.lang['noti_network_error'])
 
     def run(self):
         common.log(self.run, 'Info', 'version: %s' % CONST['version'])
-        t = rumps.Timer(self.callback_refresh, 1)
-        t.start()
+        t_refresh = rumps.Timer(self.callback_refresh, 1)
+        t_refresh.start()
+        t_check_update = rumps.Timer(self.check_update, 86400)
+        t_check_update.start()
         self.app.run()
 
     def restart(self):
