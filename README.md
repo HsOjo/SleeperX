@@ -4,15 +4,7 @@ Auto sleep for hackintosh.
 
 Protect low battery capacity force shutdown.
 
-Develop by HsOjo.
-
-Below is the link with the project github page.
-
-https://github.com/HsOjo/SleeperX
-
-PS: You can build this app and append to login launch list.
-
-## Build
+## How To Build
 
 * Install Requirement.
 
@@ -25,3 +17,11 @@ pip3 install rumps pyinstaller requests
 ```bash
 python3 build.py
 ```
+
+## Report Bug
+
+If you meet some bug in this app, you can click about menu, and input command ':export log'.
+
+It will be export log file to directory, your private data will replace with hider text.
+
+And the next step, you can send this log file on this project' s github page issues.

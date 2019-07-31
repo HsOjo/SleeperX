@@ -29,7 +29,7 @@ def battery_info():
 
 
 def sleep(**kwargs):
-    osa_api.run_as_admin('/sbin/shutdown -s now', **kwargs)
+    osa_api.run_as_admin('/usr/bin/pmset sleepnow', **kwargs)
 
 
 def sleep_info():

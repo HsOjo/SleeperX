@@ -12,7 +12,7 @@ lock_log = Lock()
 
 def popen(cmd):
     return subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            encoding='utf8')
+                            encoding='utf8')  # type: subprocess.Popen
 
 
 def convert_minute(t):
@@ -62,6 +62,8 @@ def extract_log():
         io_log.seek(0)
         log = io_log.read()
         io_log.seek(0, 2)
+    else:
+        log = ''
     return log
 
 

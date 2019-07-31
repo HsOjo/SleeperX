@@ -26,7 +26,7 @@ LANGUAGE = {
             'Set the low battery capacity. (unit: percent)\n'
             'It will execute sleep command on this value and lower.\n'
             '(Just on status discharging valid.)',
-        'description_set_language':
+        'description_select_language':
             'Select your language.',
         'description_crash':
             'Oops! Application(SleeperX) Crash!\n'
@@ -51,11 +51,13 @@ LANGUAGE = {
             'Current Mode: %s',
 
         'menu_sleep_now': 'Sleep Now',
+        'menu_disable_idle_sleep': 'Disable Idle Sleep',
+        'menu_preference': 'Preference',
         'menu_set_low_battery_capacity': 'Set Low Battery Capacity',
         'menu_set_low_time_remaining': 'Set Low Time Remaining',
         'menu_set_password': 'Set Admin Password',
         'menu_set_username': 'Set Admin Username (optional)',
-        'menu_set_language': 'Set Language',
+        'menu_select_language': 'Set Language',
         'menu_set_startup': 'Set Login Startup',
         'menu_set_sleep_mode': 'Set Sleep Mode',
         'menu_check_update': 'Check Update',
@@ -138,11 +140,13 @@ LANGUAGE = {
             '当前模式：%s',
 
         'menu_sleep_now': '立即睡眠',
+        'menu_disable_idle_sleep': '阻止闲置睡眠',
+        'menu_preference': '偏好设置',
         'menu_set_low_battery_capacity': '设置低电量临界值',
-        'menu_set_low_time_remaining': '设置电池时间临界值',
+        'menu_set_low_time_remaining': '设置续航时间临界值',
         'menu_set_password': '设置管理员用户密码',
         'menu_set_username': '设置管理员用户名 (可选)',
-        'menu_set_language': '设置语言',
+        'menu_select_language': '设置语言',
         'menu_set_startup': '设置登陆启动',
         'menu_set_sleep_mode': '设置睡眠模式',
         'menu_check_update': '检查更新',
