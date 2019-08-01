@@ -23,13 +23,14 @@ class Application:
         self.pd_noidle = ProcessDaemon('/usr/bin/pmset noidle')
 
         self.menu = {}
-        self.menu_preference = None  # type: rumps.MenuItem
+        self.menu_preferences = None  # type: rumps.MenuItem
         self.menu_advanced_options = None  # type: rumps.MenuItem
         self.menu_select_language = None  # type: rumps.MenuItem
         self.menu_disable_idle_sleep = None  # type: rumps.MenuItem
         self.menu_disable_lid_sleep = None  # type: rumps.MenuItem
         self.menu_disable_idle_sleep_in_charging = None  # type: rumps.MenuItem
         self.menu_disable_lid_sleep_in_charging = None  # type: rumps.MenuItem
+        self.menu_low_battery_capacity_sleep = None  # type: rumps.MenuItem
 
         self.init_menu()
         self.battery_info = None  # type: dict
@@ -54,7 +55,7 @@ class Application:
             add_menu('disable_lid_sleep', self.lang.menu_disable_lid_sleep, self.switch_lid_sleep),
             add_menu('disable_idle_sleep', self.lang.menu_disable_idle_sleep, self.switch_idle_sleep),
             rumps.separator,
-            add_menu('preference', self.lang.menu_preference),
+            add_menu('preferences', self.lang.menu_preferences),
             add_menu('select_language', self.lang.menu_select_language, self.select_language),
             rumps.separator,
             add_menu('check_update', self.lang.menu_check_update, self.t_check_update),
@@ -63,32 +64,32 @@ class Application:
             add_menu('quit', self.lang.menu_quit, self.quit),
         ]
 
-        self.menu_preference = self.app.menu['preference']
+        self.menu_preferences = self.app.menu['preferences']
         self.menu_select_language = self.app.menu['select_language']
         self.menu_disable_idle_sleep = self.app.menu['disable_idle_sleep']
         self.menu_disable_lid_sleep = self.app.menu['disable_lid_sleep']
 
-        # menu_preference
-        add_menu('set_startup', self.lang.menu_set_startup, self.set_startup, parent=self.menu_preference)
-        self.menu_preference.add(rumps.separator)
+        # menu_preferences
+        add_menu('set_startup', self.lang.menu_set_startup, self.set_startup, parent=self.menu_preferences)
+        self.menu_preferences.add(rumps.separator)
         add_menu('set_low_battery_capacity', self.lang.menu_set_low_battery_capacity,
-                 self.set_low_battery_capacity, parent=self.menu_preference)
+                 self.set_low_battery_capacity, parent=self.menu_preferences)
         add_menu('set_low_time_remaining', self.lang.menu_set_low_time_remaining, self.set_low_time_remaining,
-                 parent=self.menu_preference)
-        self.menu_preference.add(rumps.separator)
+                 parent=self.menu_preferences)
+        self.menu_preferences.add(rumps.separator)
         self.menu_disable_idle_sleep_in_charging = add_menu('disable_idle_sleep_in_charging',
                                                             self.lang.menu_disable_idle_sleep_in_charging,
                                                             self.switch_idle_sleep_in_charging,
-                                                            parent=self.menu_preference)
+                                                            parent=self.menu_preferences)
         self.menu_disable_lid_sleep_in_charging = add_menu('disable_lid_sleep_in_charging',
                                                            self.lang.menu_disable_lid_sleep_in_charging,
                                                            self.switch_lid_sleep_in_charging,
-                                                           parent=self.menu_preference)
-        self.menu_preference.add(rumps.separator)
-        add_menu('set_password', self.lang.menu_set_password, self.set_password, parent=self.menu_preference)
-        self.menu_preference.add(rumps.separator)
+                                                           parent=self.menu_preferences)
+        self.menu_preferences.add(rumps.separator)
+        add_menu('set_password', self.lang.menu_set_password, self.set_password, parent=self.menu_preferences)
+        self.menu_preferences.add(rumps.separator)
         self.menu_advanced_options = add_menu('advanced_options', self.lang.menu_advanced_options,
-                                              parent=self.menu_preference)
+                                              parent=self.menu_preferences)
 
         # menu_select_language
         g_set_lang = lambda lang: lambda _: self.set_language(lang)
@@ -97,10 +98,15 @@ class Application:
                      parent=self.menu_select_language)
 
         # menu_advanced_options
-        add_menu('set_sleep_mode', self.lang.menu_set_sleep_mode, self.set_sleep_mode,
-                 parent=self.menu_advanced_options)
+        self.menu_low_battery_capacity_sleep = add_menu('low_battery_capacity_sleep',
+                                                        self.lang.menu_low_battery_capacity_sleep,
+                                                        self.switch_low_battery_capacity_sleep,
+                                                        parent=self.menu_advanced_options)
         self.menu_advanced_options.add(rumps.separator)
         add_menu('set_username', self.lang.menu_set_username, self.set_username, parent=self.menu_advanced_options)
+        self.menu_advanced_options.add(rumps.separator)
+        add_menu('set_sleep_mode', self.lang.menu_set_sleep_mode, self.set_sleep_mode,
+                 parent=self.menu_advanced_options)
 
         # update menus title.
         for k, v in self.menu.items():
@@ -110,6 +116,7 @@ class Application:
         # inject value to menu.
         self.menu_disable_idle_sleep_in_charging.state = Config.disable_idle_sleep_in_charging
         self.menu_disable_lid_sleep_in_charging.state = Config.disable_lid_sleep_in_charging
+        self.menu_low_battery_capacity_sleep.state = Config.low_battery_capacity_sleep
 
     @property
     def _admin_account(self):
@@ -147,31 +154,33 @@ class Application:
             if self.battery_info is not None:
                 if battery_info_prev is None or battery_info_prev['status'] != self.battery_info['status']:
                     if battery_info_prev is not None:
-                        self.callback_status_change(self.battery_info['status'], battery_info_prev['status'])
+                        self.callback_charge_status_change(self.battery_info['status'], battery_info_prev['status'])
                     else:
-                        self.callback_status_change(self.battery_info['status'])
+                        self.callback_charge_status_change(self.battery_info['status'])
 
                 self.refresh_view()
-                if self.battery_info['status'] == 'discharging' and (
+                if Config.low_battery_capacity_sleep and self.battery_info['status'] == 'discharging' and (
                         self.battery_info['percent'] <= Config.low_battery_capacity or
                         (self.battery_info['remaining'] is not None and
                          self.battery_info['remaining'] <= Config.low_time_remaining)):
-                    system_api.sleep()
+                    self.sleep()
         except:
             sender.stop()
             self.callback_exception()
 
-    def callback_status_change(self, status, status_prev=None):
+    def callback_charge_status_change(self, status, status_prev=None):
+        common.log(self.callback_charge_status_change, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         if status == 'discharging':
-            if Config.disable_idle_sleep_in_charging:
-                self.set_idle_sleep(False)
-            if Config.disable_lid_sleep_in_charging:
-                self.set_lid_sleep(False)
-        elif status == 'charging' or status == 'charged':
             if Config.disable_idle_sleep_in_charging:
                 self.set_idle_sleep(True)
             if Config.disable_lid_sleep_in_charging:
                 self.set_lid_sleep(True)
+        elif status_prev in [None, 'discharging'] and status in ['not charging', 'charging', 'finishing charge',
+                                                                 'charged']:
+            if Config.disable_idle_sleep_in_charging:
+                self.set_idle_sleep(False)
+            if Config.disable_lid_sleep_in_charging:
+                self.set_lid_sleep(False)
 
     def callback_exception(self):
         exc = common.get_exception()
@@ -248,31 +257,46 @@ class Application:
         if mode is not None and mode != info['hibernatemode']:
             system_api.set_sleep_mode(mode, **self._admin_account)
 
-    def sleep_now(self, sender: rumps.MenuItem):
+    def sleep(self):
+        fix_sleep = self.menu_disable_lid_sleep.state
+        if fix_sleep:
+            self.set_lid_sleep(True)
+
         system_api.sleep()
+
+        if fix_sleep:
+            self.set_lid_sleep(False)
+
+    def sleep_now(self, sender: rumps.MenuItem):
+        self.sleep()
 
     def display_sleep_now(self, sender: rumps.MenuItem):
         system_api.sleep(True)
 
     def switch_lid_sleep(self, sender: rumps.MenuItem):
-        self.set_lid_sleep(not sender.state)
+        self.set_lid_sleep(sender.state)
 
     def switch_idle_sleep(self, sender: rumps.MenuItem):
-        self.set_idle_sleep(not sender.state)
+        self.set_idle_sleep(sender.state)
+
+    def switch_low_battery_capacity_sleep(self, sender: rumps.MenuItem):
+        sender.state = not sender.state
+        Config.low_battery_capacity_sleep = sender.state
+        Config.save()
 
     def set_lid_sleep(self, available):
-        self.menu_disable_lid_sleep.state = available
+        self.menu_disable_lid_sleep.state = not available
         if available:
-            system_api.set_sleep_available(False, **self._admin_account)
-        else:
             system_api.set_sleep_available(True, **self._admin_account)
+        else:
+            system_api.set_sleep_available(False, **self._admin_account)
 
     def set_idle_sleep(self, available):
-        self.menu_disable_idle_sleep.state = available
+        self.menu_disable_idle_sleep.state = not available
         if available:
-            self.pd_noidle.start()
-        else:
             self.pd_noidle.stop()
+        else:
+            self.pd_noidle.start()
 
     def switch_idle_sleep_in_charging(self, sender: rumps.MenuItem):
         sender.state = not sender.state
@@ -337,8 +361,6 @@ class Application:
     def run(self):
         t_refresh = rumps.Timer(self.callback_refresh, 1)
         t_refresh.start()
-        t_check_update = rumps.Timer(self.check_update, 86400)
-        t_check_update.start()
         self.app.run()
 
     def restart(self):

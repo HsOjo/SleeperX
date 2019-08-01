@@ -11,6 +11,7 @@ class Config:
     username = ''
     password = ''
     language = 'en'
+    low_battery_capacity_sleep = True
     low_battery_capacity = 6
     low_time_remaining = 10
     disable_idle_sleep_in_charging = False

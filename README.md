@@ -1,8 +1,10 @@
 # SleeperX
 
-Auto sleep for hackintosh.
+Auto sleep on low battery capacity. (Hackintosh Feature)
 
-Protect low battery capacity force shutdown.
+Auto disable sleep on use AC power.
+
+And it can disable idle sleep or lid sleep!
 
 ## How To Build
 

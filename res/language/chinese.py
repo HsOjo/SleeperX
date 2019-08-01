@@ -11,6 +11,9 @@ class Chinese(English):
 在黑苹果实现自动睡眠功能。
 可以有效防止电池电量不足，导致直接断电关机。
 
+在接通电源时，可以自动禁止睡眠。
+并且可以随意关闭闲置睡眠或合盖睡眠。
+
 由HsOjo开发。
 以下是github页面链接。'''
     description_set_password = '''设置管理员用户密码。
@@ -49,8 +52,9 @@ class Chinese(English):
     menu_disable_idle_sleep = '阻止闲置睡眠'
     menu_disable_idle_sleep_in_charging = '在接通电源时阻止闲置睡眠'
     menu_disable_lid_sleep_in_charging = '在接通电源时阻止合盖睡眠'
-    menu_preference = '偏好设置'
+    menu_preferences = '偏好设置'
     menu_advanced_options = '高级选项'
+    menu_low_battery_capacity_sleep = '低电量睡眠（黑苹果特性）'
     menu_set_low_battery_capacity = '设置低电量临界值'
     menu_set_low_time_remaining = '设置续航时间临界值'
     menu_set_password = '设置管理员用户密码'
@@ -66,7 +70,8 @@ class Chinese(English):
     view_remaining = '剩余时间: %s'
     view_remaining_time = '%d 分钟'
     view_remaining_counting = '(计算中...)'
-    status_charging = {'not charging': '未在充电', 'discharging': '正在放电', 'charging': '正在充电', 'charged': '已充满'}
+    status_charging = {'not charging': '未在充电', 'discharging': '正在放电', 'charging': '正在充电',
+                       'finishing charge': '即将充满', 'charged': '已充满'}
     title_crash = '应用崩溃'
     title_export_log = '导出日志文件'
     noti_update_version = '发现新版本: %s'

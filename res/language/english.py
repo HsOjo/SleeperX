@@ -11,6 +11,9 @@ class English(Language):
 Auto sleep for hackintosh. 
 Protect low battery capacity force shutdown.
 
+Auto disable sleep on use AC power.
+And it can disable idle sleep or lid sleep!
+
 Develop by HsOjo.
 Below is the link with the project github page.'''
     description_set_password = '''Set the administrator user password.
@@ -50,12 +53,13 @@ Current Mode: %s'''
     menu_disable_idle_sleep = 'Disable Idle Sleep'
     menu_disable_idle_sleep_in_charging = 'Disable Lid Sleep In Charging'
     menu_disable_lid_sleep_in_charging = 'Disable Idle Sleep In Charging'
-    menu_preference = 'Preference'
+    menu_preferences = 'Preferences'
     menu_advanced_options = 'Advanced Options'
+    menu_low_battery_capacity_sleep = 'Low Battery Capacity Sleep (Hackintosh Feature)'
     menu_set_low_battery_capacity = 'Set Low Battery Capacity'
     menu_set_low_time_remaining = 'Set Low Time Remaining'
     menu_set_password = 'Set Admin Password'
-    menu_set_username = 'Set Admin Username (optional)'
+    menu_set_username = 'Set Admin Username (Optional)'
     menu_select_language = 'Set Language'
     menu_set_startup = 'Set Login Startup'
     menu_set_sleep_mode = 'Set Sleep Mode'
@@ -68,7 +72,7 @@ Current Mode: %s'''
     view_remaining_time = '%d minutes'
     view_remaining_counting = '(counting...)'
     status_charging = {'not charging': 'not charging', 'discharging': 'discharging', 'charging': 'charging',
-                       'charged': 'charged'}
+                       'finishing charge': 'finishing charge', 'charged': 'charged'}
     title_crash = 'Application Crash'
     title_export_log = 'Export Log File'
     noti_update_version = 'Found update: %s'
