@@ -35,4 +35,4 @@ class Config:
             config = common.object_to_dict(Config)
             config['password'] = base64.b64encode(config['password'].encode()).decode()[::-1]
             json.dump(config, io, indent='  ')
-            common.log('config_load', 'Info', common.object_to_dict(Config))
+            common.log('config_save', 'Info', common.object_to_dict(Config))

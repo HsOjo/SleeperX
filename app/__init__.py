@@ -31,6 +31,7 @@ class Application:
         self.menu_disable_idle_sleep_in_charging = None  # type: rumps.MenuItem
         self.menu_disable_lid_sleep_in_charging = None  # type: rumps.MenuItem
         self.menu_low_battery_capacity_sleep = None  # type: rumps.MenuItem
+        self.menu_check_update = None  # type: rumps.MenuItem
 
         self.init_menu()
         self.battery_info = None  # type: dict
@@ -68,6 +69,7 @@ class Application:
         self.menu_select_language = self.app.menu['select_language']
         self.menu_disable_idle_sleep = self.app.menu['disable_idle_sleep']
         self.menu_disable_lid_sleep = self.app.menu['disable_lid_sleep']
+        self.menu_check_update = self.app.menu['check_update']
 
         # menu_preferences
         add_menu('set_startup', self.lang.menu_set_startup, self.set_startup, parent=self.menu_preferences)
@@ -313,6 +315,8 @@ class Application:
                                    Const.github_page)
         if res == ':export log':
             self.export_log()
+        elif res == ':check update':
+            self.check_update(self.menu_check_update, True)
         elif res == Const.github_page:
             system_api.open_url(Const.github_page)
 
@@ -333,29 +337,29 @@ class Application:
     def t_check_update(self, sender: rumps.MenuItem = None):
         Thread(target=self.check_update, args=(sender,)).start()
 
-    def check_update(self, sender):
+    def check_update(self, sender, test=False):
         try:
             release = github.get_latest_release(Const.author, Const.app_name, timeout=5)
             common.log(self.check_update, 'Info', release)
 
-            if common.compare_version(Const.version, release['tag_name']):
+            if test or common.compare_version(Const.version, release['tag_name']):
                 rumps.notification(
                     self.lang.noti_update_version % release['name'],
                     self.lang.noti_update_time % release['published_at'],
                     release['body'],
                 )
 
-                if isinstance(sender, rumps.MenuItem):
+                if sender == self.menu_check_update:
                     if len(release['assets']) > 0:
                         system_api.open_url(release['assets'][0]['browser_download_url'])
                     else:
-                        system_api.open_url('html_url')
+                        system_api.open_url(release['html_url'])
             else:
-                if isinstance(sender, rumps.MenuItem):
+                if sender == self.menu_check_update:
                     rumps.notification(sender.title, self.lang.noti_update_none, self.lang.noti_update_star)
         except:
             common.log(self.check_update, 'Warning', common.get_exception())
-            if isinstance(sender, rumps.MenuItem):
+            if sender == self.menu_check_update:
                 rumps.notification(sender.title, '', self.lang.noti_network_error)
 
     def run(self):
