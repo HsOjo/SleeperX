@@ -6,6 +6,8 @@ Auto disable sleep on use AC power.
 
 And it can disable idle sleep or lid sleep!
 
+![Thumbnail](doc/thumbnail_en.png)
+
 ## How To Build
 
 * Install Requirement.
