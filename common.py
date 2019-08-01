@@ -1,9 +1,10 @@
 import json
 import os
-import subprocess
 import sys
+import time
 import traceback
 from io import StringIO
+from subprocess import PIPE, Popen
 from threading import Lock
 
 io_log = StringIO()
@@ -11,8 +12,7 @@ lock_log = Lock()
 
 
 def popen(cmd):
-    return subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            encoding='utf8')  # type: subprocess.Popen
+    return Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding='utf8')
 
 
 def convert_minute(t):
@@ -68,14 +68,17 @@ def extract_log():
 
 
 def log(src, tag='Info', *args):
+    to_json = lambda x: json.dumps(x, indent=4, ensure_ascii=False)
+
     log_items = []
     for i in args:
         if isinstance(i, list) or isinstance(i, dict):
-            log_items.append(json.dumps(i, indent=4, ensure_ascii=False))
+            log_items.append(to_json(i))
         elif isinstance(i, tuple):
-            log_items.append(json.dumps(list(i), indent=4, ensure_ascii=False))
+            log_items.append(to_json(list(i)))
         else:
             log_items.append(i)
+            log_items.append(to_json(object_to_dict(i)))
 
     if isinstance(src, str):
         source = src
@@ -84,3 +87,44 @@ def log(src, tag='Info', *args):
 
     with lock_log:
         print('[%s] %s' % (tag, source), *log_items)
+
+
+def wait_and_check(wait: float, step: float):
+    def core(func):
+        def _core(*args, **kwargs):
+            for i in range(int(wait // step)):
+                if not func(*args, **kwargs):
+                    return False
+                time.sleep(step)
+            time.sleep(wait % step)
+            return True
+
+        return _core
+
+    return core
+
+
+def time_count(func):
+    def core(*args, **kwargs):
+        t = time.time()
+        result = func(*args, **kwargs)
+        print('%s time usage: %f' % (func.__name__, time.time() - t))
+        return result
+
+    return core
+
+
+def object_to_dict(obj):
+    r = {}
+    for k in dir(obj):
+        if k[0] != '_':
+            v = getattr(obj, k)
+            if type(v) in [str, int, float, None.__class__]:
+                r[k] = v
+
+    return r
+
+
+def dict_to_obj(d: dict, obj=object()):
+    for k, v in d.items():
+        setattr(obj, k, v)

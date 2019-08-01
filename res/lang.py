@@ -51,6 +51,7 @@ LANGUAGE = {
             'Current Mode: %s',
 
         'menu_sleep_now': 'Sleep Now',
+        'menu_disable_lid_sleep': 'Disable Lid Sleep',
         'menu_disable_idle_sleep': 'Disable Idle Sleep',
         'menu_preference': 'Preference',
         'menu_set_low_battery_capacity': 'Set Low Battery Capacity',
@@ -140,6 +141,7 @@ LANGUAGE = {
             '当前模式：%s',
 
         'menu_sleep_now': '立即睡眠',
+        'menu_disable_lid_sleep': '阻止合盖睡眠',
         'menu_disable_idle_sleep': '阻止闲置睡眠',
         'menu_preference': '偏好设置',
         'menu_set_low_battery_capacity': '设置低电量临界值',

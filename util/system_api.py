@@ -65,3 +65,31 @@ def set_sleep_mode(mode, **kwargs):
 def open_url(url, new=False):
     param = ' -n' if new else ''
     os.system('/usr/bin/open%s "%s"' % (param, url))
+
+
+def check_process(pid: int = None, name=None):
+    if pid is not None:
+        p = common.popen('/bin/ps %d' % pid)
+    elif name is not None:
+        p = common.popen('/usr/bin/pgrep %s|xargs /bin/ps x -p' % name)
+    else:
+        p = common.popen('/bin/ps ax')
+    lines = p.stdout.read().split('\n')[1:]
+
+    items = []
+    if len(lines) > 0:
+        reg = re.compile('^(?P<PID>\S*)\s*(?P<TT>\S*)\s*(?P<STAT>\S*)\s*(?P<TIME>\S*)\s*(?P<COMMAND>.*)$')
+        for i in lines:
+            i = i.strip()
+            if i != '':
+                item = reg.match(i).groupdict()
+                item['PID'] = int(item['PID'])
+                items.append(item)
+
+    if pid is not None:
+        if len(items) > 0:
+            return items[0]
+        else:
+            return None
+    else:
+        return items

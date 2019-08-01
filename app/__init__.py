@@ -1,6 +1,3 @@
-import base64
-import json
-import os
 from threading import Thread
 
 import rumps
@@ -9,20 +6,27 @@ import common
 from res.const import CONST
 from res.lang import LANGUAGE
 from util import osa_api, system_api, github
-from .busy_work import BusyWork
+from .config import Config
+from .process_daemon import ProcessDaemon
 
 
 class Application:
-    CONFIG_FILE = os.path.expanduser('~/Library/Application Support/com.hsojo.sleeperx')
     lang = None  # type: dict
     config = None  # type: dict
 
     def __init__(self):
-        Application.load_config()
-        Application.lang = LANGUAGE[self.config['language']]
+        common.log('app_init', 'Info', 'version: %s' % CONST['version'])
+
+        Config.load()
+        common.log('config_load', 'Info', Config)
+
+        Application.lang = LANGUAGE.get(Config.language, LANGUAGE['en'])
 
         self.app = rumps.App(CONST['app_name'], quit_button=None)
-        self.busy_work = BusyWork()
+
+        self.pd_noidle = ProcessDaemon('/usr/bin/pmset noidle')
+        self.pd_caffeinate = ProcessDaemon('/usr/bin/caffeinate')
+
         self.menu = {}
 
         def add_menu(name, title='', callback=None, parent=self.app.menu):
@@ -38,6 +42,7 @@ class Application:
             add_menu('view_status'),
             add_menu('view_remaining'),
             rumps.separator,
+            add_menu('disable_lid_sleep', self.lang['menu_disable_lid_sleep'], self.switch_lid_sleep),
             add_menu('disable_idle_sleep', self.lang['menu_disable_idle_sleep'], self.switch_idle_sleep),
             add_menu('sleep_now', self.lang['menu_sleep_now'], self.sleep_now),
             rumps.separator,
@@ -77,29 +82,6 @@ class Application:
             v['parent'][v['name']].title = v['title']
             del v['title']
 
-    @staticmethod
-    def load_config():
-        try:
-            with open(Application.CONFIG_FILE, 'r', encoding='utf8') as io:
-                config = json.load(io)
-                config['password'] = base64.b64decode(config['password'][::-1].encode()).decode()
-                Application.config = config
-        except FileNotFoundError:
-            Application.config = {
-                'username': '',
-                'password': '',
-                'language': 'en',
-                'low_battery_capacity': 6,
-                'low_time_remaining': 10
-            }
-
-    @staticmethod
-    def save_config():
-        with open(Application.CONFIG_FILE, 'w', encoding='utf8') as io:
-            config = Application.config.copy()
-            config['password'] = base64.b64encode(config['password'].encode()).decode()[::-1]
-            json.dump(config, io, indent='  ')
-
     def set_menu_title(self, key, title):
         self.app.menu[key].title = title
 
@@ -129,11 +111,12 @@ class Application:
                                             'view_remaining_counting']))
 
                 if battery_info['status'] == 'discharging' and (
-                        battery_info['percent'] <= self.config['low_battery_capacity'] or
+                        battery_info['percent'] <= Config.low_battery_capacity or
                         (battery_info['remaining'] is not None and
-                         battery_info['remaining'] <= self.config['low_time_remaining'])):
-                    system_api.sleep(user=self.config['username'], pwd=self.config['password'])
+                         battery_info['remaining'] <= Config.low_time_remaining)):
+                    system_api.sleep(user=Config.username, pwd=Config.password)
         except:
+            sender.stop()
             self.callback_exception()
 
     @staticmethod
@@ -148,29 +131,29 @@ class Application:
                                        str(self.config.get('low_battery_capacity', '')))
 
         if isinstance(content, str) and content.isnumeric():
-            self.config['low_battery_capacity'] = int(content)
-            self.save_config()
+            Config.low_battery_capacity = int(content)
+            Config.save()
 
     def set_low_time_remaining(self, sender: rumps.MenuItem):
         content = osa_api.dialog_input(sender.title, self.lang['description_set_low_time_remaining'],
                                        str(self.config.get('low_time_remaining', '')))
         if isinstance(content, str) and content.isnumeric():
-            self.config['low_time_remaining'] = int(content)
-            self.save_config()
+            Config.low_time_remaining = int(content)
+            Config.save()
 
     def set_username(self, sender: rumps.MenuItem):
         content = osa_api.dialog_input(sender.title, self.lang['description_set_username'],
                                        self.config.get('username', ''))
         if content is not None:
-            self.config['username'] = content
-            self.save_config()
+            Config.username = content
+            Config.save()
 
     def set_password(self, sender: rumps.MenuItem):
         content = osa_api.dialog_input(sender.title, self.lang['description_set_password'],
                                        hidden=True)
         if content is not None:
-            self.config['password'] = content
-            self.save_config()
+            Config.password = content
+            Config.save()
 
     def select_language(self, sender: rumps.MenuItem):
         items = []
@@ -210,17 +193,24 @@ class Application:
                                     items, default)
         mode = items_value.get(res)
         if mode is not None and mode != info['hibernatemode']:
-            system_api.set_sleep_mode(mode, user=self.config['username'], pwd=self.config['password'])
+            system_api.set_sleep_mode(mode, user=Config.username, pwd=Config.password)
 
     def sleep_now(self, sender: rumps.MenuItem):
-        system_api.sleep(user=self.config['username'], pwd=self.config['password'])
+        system_api.sleep(user=Config.username, pwd=Config.password)
+
+    def switch_lid_sleep(self, sender: rumps.MenuItem):
+        sender.state = not sender.state
+        if sender.state:
+            self.pd_caffeinate.start()
+        else:
+            self.pd_caffeinate.stop()
 
     def switch_idle_sleep(self, sender: rumps.MenuItem):
         sender.state = not sender.state
         if sender.state:
-            self.busy_work.start()
+            self.pd_noidle.start()
         else:
-            self.busy_work.stop()
+            self.pd_noidle.stop()
 
     def about(self, sender: rumps.MenuItem):
         res = osa_api.dialog_input(sender.title, self.lang['description_about'] % CONST['version'],
@@ -230,16 +220,16 @@ class Application:
         elif res == CONST['github_page']:
             system_api.open_url(CONST['github_page'])
 
-    @staticmethod
-    def export_log():
+    def export_log(self):
         folder = osa_api.choose_folder(Application.lang['title_export_log'])
         if folder is not None:
-            log = common.extract_log().replace(Application.config['password'], CONST['pwd_hider'])
+            log = common.extract_log().replace(self.config['password'], CONST['pwd_hider'])
             with open('%s/%s' % (folder, 'SleeperX_log.txt'), 'w', encoding='utf8') as io:
                 io.write(log)
 
-    @staticmethod
-    def quit(sender: rumps.MenuItem = None):
+    def quit(self, sender: rumps.MenuItem = None):
+        self.pd_noidle.stop()
+        self.pd_caffeinate.stop()
         rumps.quit_application()
 
     def t_check_update(self, sender: rumps.MenuItem = None):
@@ -271,7 +261,6 @@ class Application:
                 rumps.notification(sender.title, '', self.lang['noti_network_error'])
 
     def run(self):
-        common.log(self.run, 'Info', 'version: %s' % CONST['version'])
         t_refresh = rumps.Timer(self.callback_refresh, 1)
         t_refresh.start()
         t_check_update = rumps.Timer(self.check_update, 86400)
@@ -284,6 +273,6 @@ class Application:
         self.quit()
 
     def set_language(self, language):
-        self.config['language'] = language
-        self.save_config()
+        Config.language = language
+        Config.save()
         self.restart()
