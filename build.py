@@ -2,7 +2,7 @@ import os
 import shutil
 from zipfile import ZipFile
 
-from res.const import CONST
+from res.const import Const
 
 # reset dist directory.
 shutil.rmtree('./build')
@@ -20,7 +20,7 @@ info = info[:dict_pos] + '\t<key>LSUIElement</key>\n\t<string>1</string>\n' + in
 with open(INFO_FILE, 'w', encoding='utf8') as io:
     io.write(info)
 
-zf = ZipFile('./dist/SleeperX-%s.zip' % CONST['version'], 'w')
+zf = ZipFile('./dist/SleeperX-%s.zip' % Const.version, 'w')
 src_dir = './dist/SleeperX.app'
 for d, ds, fs in os.walk(src_dir):
     for f in fs:

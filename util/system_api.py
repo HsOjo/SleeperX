@@ -28,33 +28,35 @@ def battery_info():
         return None
 
 
-def sleep(**kwargs):
-    osa_api.run_as_admin('/usr/bin/pmset sleepnow', **kwargs)
+def set_sleep_available(b, **kwargs):
+    osa_api.run_as_admin('/usr/bin/pmset -a disablesleep %d' % (0 if b else 1), **kwargs)
+
+
+def sleep(display_only=False):
+    os.system('/usr/bin/pmset %s' % ('displaysleepnow' if display_only else 'sleepnow'))
 
 
 def sleep_info():
-    p = common.popen('/usr/bin/pmset -g')
-    data = p.stdout.read()
-    data = data[data.find('\n '):].split('\n')
-    res = {}
-    for row in data:
-        row = row.strip()
-        if row != '':
-            p_row = ''
-            while p_row != row:
-                p_row = row
-                row = row.replace('  ', ' ')
-            cols = row.split(' ')
-            if len(cols) >= 2:
-                k = cols[0]
-                v = cols[1]
+    p = common.popen('/usr/bin/pmset -g live')
+    reg = re.compile('^\s+(?P<key>\S*)\s+(?P<value>\S*)\s*(?P<note>.*)$')
+    lines = p.stdout.read().split('\n')
+    items = {}
+    notes = {}
+    for line in lines:
+        match = reg.match(line)
+        if match is not None:
+            item = match.groupdict()
+            if 'key' in item and 'value' in item:
+                v = item['value']
                 if v.isnumeric():
                     v = int(v)
-                elif v.replace('.', '').isnumeric():
+                elif v.replace('.', '', 1).isnumeric():
                     v = float(v)
-                res[k] = v
+                items[item['key']] = v
+                if item['note'] != '':
+                    notes[item['key']] = item['note']
 
-    return res
+    return items, notes
 
 
 def set_sleep_mode(mode, **kwargs):
@@ -82,9 +84,11 @@ def check_process(pid: int = None, name=None):
         for i in lines:
             i = i.strip()
             if i != '':
-                item = reg.match(i).groupdict()
-                item['PID'] = int(item['PID'])
-                items.append(item)
+                match = reg.match(i)
+                if match is not None:
+                    item = match.groupdict()
+                    item['PID'] = int(item['PID'])
+                    items.append(item)
 
     if pid is not None:
         if len(items) > 0:

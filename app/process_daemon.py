@@ -51,7 +51,7 @@ class ProcessDaemon:
         with self._lock:
             self._process = None
 
-        if daemon:
+        if daemon and self._t_daemon:
             self._t_daemon.join(timeout=3)
             self._t_daemon = None
 

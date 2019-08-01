@@ -119,7 +119,7 @@ def object_to_dict(obj):
     for k in dir(obj):
         if k[0] != '_':
             v = getattr(obj, k)
-            if type(v) in [str, int, float, None.__class__]:
+            if not callable(v):
                 r[k] = v
 
     return r
