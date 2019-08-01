@@ -97,3 +97,14 @@ def check_process(pid: int = None, name=None):
             return None
     else:
         return items
+
+
+def check_lid():
+    p = common.popen('ioreg -r -k AppleClamshellState -d 4 | grep AppleClamshellState | cut -c 30- ')
+    content = p.stdout.read().strip()
+    if content == 'Yes':
+        return True
+    elif content == 'No':
+        return False
+    else:
+        return None

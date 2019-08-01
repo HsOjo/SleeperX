@@ -54,6 +54,7 @@ class Chinese(English):
     menu_disable_lid_sleep_in_charging = '在接通电源时阻止合盖睡眠'
     menu_preferences = '偏好设置'
     menu_advanced_options = '高级选项'
+    menu_lock_screen_on_lid = '在合盖时锁屏（阻止合盖睡眠时使用）'
     menu_low_battery_capacity_sleep = '低电量睡眠（黑苹果特性）'
     menu_set_low_battery_capacity = '设置低电量临界值'
     menu_set_low_time_remaining = '设置续航时间临界值'

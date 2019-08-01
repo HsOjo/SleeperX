@@ -16,6 +16,7 @@ class Config:
     low_time_remaining = 10
     disable_idle_sleep_in_charging = False
     disable_lid_sleep_in_charging = False
+    lock_screen_on_lid = False
 
     @staticmethod
     def load():

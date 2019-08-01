@@ -32,9 +32,11 @@ class Application:
         self.menu_disable_lid_sleep_in_charging = None  # type: rumps.MenuItem
         self.menu_low_battery_capacity_sleep = None  # type: rumps.MenuItem
         self.menu_check_update = None  # type: rumps.MenuItem
+        self.menu_lock_screen_on_lid = None  # type: rumps.MenuItem
 
         self.init_menu()
         self.battery_info = None  # type: dict
+        self.lid_stat = None  # type: bool
 
     def init_menu(self):
         def add_menu(name, title='', callback=None, parent=self.app.menu):
@@ -87,6 +89,11 @@ class Application:
                                                            self.lang.menu_disable_lid_sleep_in_charging,
                                                            self.switch_lid_sleep_in_charging,
                                                            parent=self.menu_preferences)
+        self.menu_preferences.add(rumps.separator)
+        self.menu_lock_screen_on_lid = add_menu('lock_screen_on_lid',
+                                                self.lang.menu_lock_screen_on_lid,
+                                                self.switch_lock_screen_on_lid,
+                                                parent=self.menu_preferences)
         self.menu_preferences.add(rumps.separator)
         add_menu('set_password', self.lang.menu_set_password, self.set_password, parent=self.menu_preferences)
         self.menu_preferences.add(rumps.separator)
@@ -151,14 +158,20 @@ class Application:
 
     def callback_refresh(self, sender: rumps.Timer):
         try:
+            lid_stat_prev = self.lid_stat
+            self.lid_stat = system_api.check_lid()
+            if self.lid_stat is not None:
+                if lid_stat_prev is None or lid_stat_prev != self.lid_stat:
+                    self.callback_lid_status_changed(self.lid_stat, lid_stat_prev)
+
             battery_info_prev = self.battery_info
             self.battery_info = system_api.battery_info()
             if self.battery_info is not None:
                 if battery_info_prev is None or battery_info_prev['status'] != self.battery_info['status']:
                     if battery_info_prev is not None:
-                        self.callback_charge_status_change(self.battery_info['status'], battery_info_prev['status'])
+                        self.callback_charge_status_changed(self.battery_info['status'], battery_info_prev['status'])
                     else:
-                        self.callback_charge_status_change(self.battery_info['status'])
+                        self.callback_charge_status_changed(self.battery_info['status'])
 
                 self.refresh_view()
                 if Config.low_battery_capacity_sleep and self.battery_info['status'] == 'discharging' and (
@@ -170,8 +183,13 @@ class Application:
             sender.stop()
             self.callback_exception()
 
-    def callback_charge_status_change(self, status, status_prev=None):
-        common.log(self.callback_charge_status_change, 'Info', 'from "%s" to "%s"' % (status_prev, status))
+    def callback_lid_status_changed(self, status, status_prev=None):
+        common.log(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
+        if Config.lock_screen_on_lid and status:
+            osa_api.lock_screen()
+
+    def callback_charge_status_changed(self, status, status_prev=None):
+        common.log(self.callback_charge_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         if status == 'discharging':
             if Config.disable_idle_sleep_in_charging:
                 self.set_idle_sleep(True)
@@ -308,6 +326,11 @@ class Application:
     def switch_lid_sleep_in_charging(self, sender: rumps.MenuItem):
         sender.state = not sender.state
         Config.disable_lid_sleep_in_charging = bool(sender.state)
+        Config.save()
+
+    def switch_lock_screen_on_lid(self, sender: rumps.MenuItem):
+        sender.state = not sender.state
+        Config.lock_screen_on_lid = bool(sender.state)
         Config.save()
 
     def about(self, sender: rumps.MenuItem):
