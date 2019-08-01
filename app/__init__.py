@@ -126,6 +126,7 @@ class Application:
         self.menu_disable_idle_sleep_in_charging.state = Config.disable_idle_sleep_in_charging
         self.menu_disable_lid_sleep_in_charging.state = Config.disable_lid_sleep_in_charging
         self.menu_low_battery_capacity_sleep.state = Config.low_battery_capacity_sleep
+        self.menu_lock_screen_on_lid.state = Config.lock_screen_on_lid
 
     @property
     def _admin_account(self):
