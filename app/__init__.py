@@ -330,7 +330,7 @@ class Application:
     def quit(self, sender: rumps.MenuItem = None):
         self.pd_noidle.stop()
         [info, _] = system_api.sleep_info()
-        if info['SleepDisabled']:
+        if info.get('SleepDisabled', False):
             system_api.set_sleep_available(True, **self._admin_account)
         rumps.quit_application()
 
