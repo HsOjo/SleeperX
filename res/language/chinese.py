@@ -15,7 +15,7 @@ class Chinese(English):
 并且可以随意关闭闲置睡眠或合盖睡眠。
 
 由HsOjo开发。
-以下是github页面链接。'''
+以下是GitHub页面链接。'''
     description_set_password = '''设置管理员用户密码。
 将用于执行睡眠命令。'''
     description_set_username = '''设置管理员用户名。
@@ -79,7 +79,7 @@ class Chinese(English):
     noti_update_version = '发现新版本: %s'
     noti_update_time = '发布时间: %s'
     noti_update_none = '当前已是最新版本。'
-    noti_update_star = '（如果你喜欢这个应用，请在github给我个star，thanks。）'
+    noti_update_star = '（如果你喜欢这个应用，请在GitHub给我个star，thanks。）'
     noti_network_error = '网络出现问题，请稍后重试。'
     sleep_mode_0 = '模式0'
     sleep_mode_3 = '模式3'

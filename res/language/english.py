@@ -15,7 +15,7 @@ Auto disable sleep on use AC power.
 And it can disable idle sleep or lid sleep!
 
 Develop by HsOjo.
-Below is the link with the project github page.'''
+Below is the link with the project GitHub page.'''
     description_set_password = '''Set the administrator user password.
 It will use for execute sleep command.'''
     description_set_username = '''Set the administrator user name.
@@ -80,7 +80,7 @@ Current Mode: %s'''
     noti_update_version = 'Found update: %s'
     noti_update_time = 'Release Time: %s'
     noti_update_none = 'Current is the newest version.'
-    noti_update_star = '(If you love this app, give me a star on github, thanks.)'
+    noti_update_star = '(If you love this app, give me a star on GitHub, thanks.)'
     noti_network_error = 'The network maybe have some problem, please retry later.'
     sleep_mode_0 = 'mode 0'
     sleep_mode_3 = 'mode 3'
