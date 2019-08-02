@@ -88,7 +88,7 @@ def log(src, tag='Info', *args):
         source = src.__name__
 
     with lock_log:
-        print('[%s] %s' % (tag, source), *log_items)
+        print('[%s] %s\n%s' % (tag, time.ctime(), source), *log_items)
 
 
 def wait_and_check(wait: float, step: float):
@@ -127,9 +127,10 @@ def object_to_dict(obj):
     return r
 
 
-def dict_to_obj(d: dict, obj=object()):
+def dict_to_obj(d: dict, obj=object(), new_fields=True):
     for k, v in d.items():
-        setattr(obj, k, v)
+        if new_fields or hasattr(obj, k):
+            setattr(obj, k, v)
 
 
 def get_resource_dir():

@@ -17,6 +17,7 @@ class Config:
     disable_idle_sleep_in_charging = False
     disable_lid_sleep_in_charging = False
     lock_screen_on_lid = False
+    short_time_cancel_lock_screen = True
 
     @staticmethod
     def load():
@@ -25,7 +26,7 @@ class Config:
                 with open(CONFIG_FILE, 'r', encoding='utf8') as io:
                     config = json.load(io)
                     config['password'] = base64.b64decode(config['password'][::-1].encode()).decode()
-                    common.dict_to_obj(config, Config)
+                    common.dict_to_obj(config, Config, new_fields=False)
                     common.log('config_load', 'Info', common.object_to_dict(Config))
         except:
             pass

@@ -5,7 +5,7 @@ import common
 from util import osa_api
 
 
-def battery_info():
+def battery_status():
     try:
         p = common.popen('/usr/bin/pmset -g ps')
         msg = p.stdout.read()
@@ -24,7 +24,7 @@ def battery_info():
 
         return info
     except:
-        common.log(battery_info, 'Warning', common.get_exception())
+        common.log(battery_status, 'Warning', common.get_exception())
         return None
 
 
@@ -73,7 +73,7 @@ def check_process(pid: int = None, name=None):
     if pid is not None:
         p = common.popen('/bin/ps %d' % pid)
     elif name is not None:
-        p = common.popen('/usr/bin/pgrep %s|xargs /bin/ps x -p' % name)
+        p = common.popen('/usr/bin/pgrep %s|/usr/bin/xargs /bin/ps x -p' % name)
     else:
         p = common.popen('/bin/ps ax')
     lines = p.stdout.read().split('\n')[1:]
@@ -100,11 +100,25 @@ def check_process(pid: int = None, name=None):
 
 
 def check_lid():
-    p = common.popen('ioreg -r -k AppleClamshellState -d 4 | grep AppleClamshellState | cut -c 30- ')
-    content = p.stdout.read().strip()
-    if content == 'Yes':
+    p = common.popen('/usr/sbin/ioreg -r -k AppleClamshellState')
+    content = p.stdout.read()
+
+    reg = re.compile(r'"AppleClamshellState" = (\S+)')
+    result = common.reg_find_one(reg, content, None)
+
+    if result == 'Yes':
         return True
-    elif content == 'No':
+    elif result == 'No':
         return False
     else:
         return None
+
+
+def get_hid_idle_time():
+    p = common.popen('/usr/sbin/ioreg -c IOHIDSystem')
+    content = p.stdout.read()
+
+    reg = re.compile(r'"HIDIdleTime" = (\d+)')
+    times = [int(x) for x in reg.findall(content)]
+
+    return max(times) / 1000000000
