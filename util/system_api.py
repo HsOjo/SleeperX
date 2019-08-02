@@ -10,7 +10,7 @@ def battery_status():
         p = common.popen('/usr/bin/pmset -g ps')
         msg = p.stdout.read()
 
-        reg = re.compile('(\d*%); (.*?); (.*?) present: ')
+        reg = re.compile(r'(\d*%); (.*?); (.*?) present: ')
         [res] = reg.findall(msg.replace('AC attached; not charging', 'not charging; (no estimate)'))
 
         remaining = res[2].replace(' remaining', '')
@@ -38,7 +38,7 @@ def sleep(display_only=False):
 
 def sleep_info():
     p = common.popen('/usr/bin/pmset -g live')
-    reg = re.compile('^\s+(?P<key>\S*)\s+(?P<value>\S*)\s*(?P<note>.*)$')
+    reg = re.compile(r'^\s+(?P<key>\S*)\s+(?P<value>\S*)\s*(?P<note>.*)$')
     lines = p.stdout.read().split('\n')
     items = {}
     notes = {}
@@ -80,7 +80,7 @@ def check_process(pid: int = None, name=None):
 
     items = []
     if len(lines) > 0:
-        reg = re.compile('^(?P<PID>\S*)\s*(?P<TT>\S*)\s*(?P<STAT>\S*)\s*(?P<TIME>\S*)\s*(?P<COMMAND>.*)$')
+        reg = re.compile(r'^(?P<PID>\S*)\s*(?P<TT>\S*)\s*(?P<STAT>\S*)\s*(?P<TIME>\S*)\s*(?P<COMMAND>.*)$')
         for i in lines:
             i = i.strip()
             if i != '':
@@ -100,7 +100,7 @@ def check_process(pid: int = None, name=None):
 
 
 def check_lid():
-    p = common.popen('/usr/sbin/ioreg -r -k AppleClamshellState')
+    p = common.popen('/usr/sbin/ioreg -c IOPMrootDomain -d 4')
     content = p.stdout.read()
 
     reg = re.compile(r'"AppleClamshellState" = (\S+)')
@@ -115,10 +115,10 @@ def check_lid():
 
 
 def get_hid_idle_time():
-    p = common.popen('/usr/sbin/ioreg -c IOHIDSystem')
+    p = common.popen('/usr/sbin/ioreg -c IOHIDSystem -d 4')
     content = p.stdout.read()
 
     reg = re.compile(r'"HIDIdleTime" = (\d+)')
-    times = [int(x) for x in reg.findall(content)]
+    result = common.reg_find_one(reg, content, None)
 
-    return max(times) / 1000000000
+    return int(result) / 1000000000
