@@ -130,3 +130,7 @@ def object_to_dict(obj):
 def dict_to_obj(d: dict, obj=object()):
     for k, v in d.items():
         setattr(obj, k, v)
+
+
+def get_resource_dir():
+    return getattr(sys, '_MEIPASS', '.')

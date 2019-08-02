@@ -207,7 +207,7 @@ class Application:
         exc = common.get_exception()
         common.log(self.callback_exception, 'Error', exc)
         if osa_api.alert(self.lang.title_crash, self.lang.description_crash):
-            Application.export_log()
+            self.export_log()
 
     def set_low_battery_capacity(self, sender: rumps.MenuItem):
         content = osa_api.dialog_input(sender.title, self.lang.description_set_low_battery_capacity,
@@ -389,6 +389,7 @@ class Application:
     def run(self):
         t_refresh = rumps.Timer(self.callback_refresh, 1)
         t_refresh.start()
+        self.app.icon = '%s/res/icon.png' % common.get_resource_dir()
         self.app.run()
 
     def restart(self):
