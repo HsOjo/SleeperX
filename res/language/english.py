@@ -34,17 +34,17 @@ It will execute sleep command on this value and lower.
 Will export log later. Send the log file to Developer, please.'''
     description_set_startup = '''Do you want to set startup this app on login?
 (You can cancel it on `System Preferences` - `User or Group account` - `Login items`)'''
-    description_set_sleep_mode = '''mode0: by default on desktops. 
+    description_set_sleep_mode = '''mode 0: by default on desktops. 
 The system will not back memory up to persistent storage.
-The system must wake from the contents of mem-ory; the system will lose context on power loss. 
+The system must wake from the contents of memory; the system will lose context on power loss. 
 
-mode3: by default on portables. 
+mode 3: by default on portables. 
 The system will store a copy of memory to persistent storage (the disk), and will power memory during sleep.
 The system will wake from memory, unless a power loss forces it to restore from hibernate image.
 
-mode25: The system will store a copy of memory to persistent storage (the disk), and will remove power to memory. 
+mode 25: The system will store a copy of memory to persistent storage (the disk), and will remove power to memory. 
 The system will restore from disk image. 
-If you want "hiberna-tion" - slower sleeps, slower wakes, and better battery life, you should use this setting.
+If you want "hibernation" - slower sleeps, slower wakes, and better battery life, you should use this setting.
 
 (Only test on macOS 10.14 successful, 10.13- old version maybe different.)
 

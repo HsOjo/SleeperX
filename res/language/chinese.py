@@ -9,7 +9,7 @@ class Chinese(English):
 
     description_about = '''SleeperX 版本 %s
 
-在黑苹果下实现自动睡眠功能。
+在Hackintosh下实现自动睡眠功能。
 可以有效防止电池电量不足，导致直接断电关机。
 
 在接通电源时，可以自动禁止睡眠。
@@ -67,7 +67,7 @@ Enjoy yourself!'''
     menu_advanced_options = '高级选项'
     menu_screen_save_on_lid = '在合盖时开启屏幕保护（阻止合盖睡眠时使用）'
     menu_short_time_cancel_screen_save = '短时间内取消屏幕保护（合盖时3秒内可取消）'
-    menu_low_battery_capacity_sleep = '低电量睡眠（黑苹果特性）'
+    menu_low_battery_capacity_sleep = '低电量睡眠（Hackintosh特性）'
     menu_set_low_battery_capacity = '设置低电量临界值'
     menu_set_low_time_remaining = '设置续航时间临界值'
     menu_set_username = '设置管理员用户名 (非管理员用户使用)'
