@@ -24,7 +24,7 @@ python3 build.py
 
 ## Report Bug
 
-If you meet some bug in this app, you can click about menu, and input command ':export log'.
+If you meet some bug in this app, You can try to export log (in "Preferences" - "Advanced Options"), and send to this project issues page.
 
 It will be export log file to directory, your private data will replace with hider text.
 
