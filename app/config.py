@@ -8,6 +8,7 @@ CONFIG_FILE = os.path.expanduser('~/Library/Application Support/com.hsojo.sleepe
 
 
 class Config:
+    welcome = True
     username = ''
     password = ''
     language = 'en'
@@ -16,8 +17,8 @@ class Config:
     low_time_remaining = 10
     disable_idle_sleep_in_charging = False
     disable_lid_sleep_in_charging = False
-    lock_screen_on_lid = False
-    short_time_cancel_lock_screen = True
+    screen_save_on_lid = False
+    short_time_cancel_screen_save = True
 
     @staticmethod
     def load():
@@ -38,3 +39,8 @@ class Config:
             config['password'] = base64.b64encode(config['password'].encode()).decode()[::-1]
             json.dump(config, io, indent='  ')
             common.log('config_save', 'Info', common.object_to_dict(Config))
+
+    @staticmethod
+    def clear():
+        if os.path.exists(CONFIG_FILE):
+            os.unlink(CONFIG_FILE)

@@ -11,8 +11,14 @@ io_log = StringIO()
 lock_log = Lock()
 
 
+# fix pyinstaller
 def popen(cmd):
     return Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding='utf8')
+
+
+def execute_get_out(cmd):
+    p = popen(cmd)
+    return p.stdout.read()
 
 
 def convert_minute(t):

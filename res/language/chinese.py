@@ -6,6 +6,7 @@ class Chinese(English):
     unknown = '未知内容: (%s)'
     cancel = '取消'
     ok = '确定'
+
     description_about = '''SleeperX 版本 %s
 
 在黑苹果实现自动睡眠功能。
@@ -17,10 +18,10 @@ class Chinese(English):
 由HsOjo开发。
 以下是GitHub页面链接。'''
     description_set_password = '''设置管理员用户密码。
-将用于执行睡眠命令。'''
-    description_set_username = '''设置管理员用户名。
-将用于执行睡眠命令。
-(可选。如果为空则使用当前用户。)'''
+将用于执行更改“电源管理设置”。（阻止合盖睡眠）'''
+    description_set_username = '''设置管理员用户名。（这里的用户名不是全名！您可以在“terminal.app”上查看，登录您的管理用户，并在终端上输入"whoami"。）
+将用于执行更改“电源管理设置”。（阻止合盖睡眠）
+(如果当前用户是管理员，可留空。如果为空，将使用当前用户名。)'''
     description_set_low_time_remaining = '''设置电池时间临界值 (单位: 分钟)
 当电池时间不足该值，将执行睡眠命令。
 (只在非充电状态有效。)'''
@@ -46,6 +47,16 @@ class Chinese(English):
 (仅在macOS 10.14测试成功, 10.13以下的老版本情况会有所不同。)
 
 当前模式：%s'''
+    description_welcome_why_need_admin = '''您需要输入管理员帐户以授予SleeperX权限。因为SleeperX会更改“电源管理设置”。（阻止合盖睡眠）'''
+    description_welcome_is_admin = '''当前用户是管理员，跳过了管理员用户名设置。（如果要在SleeperX上使用其他管理员帐户工作，可以稍后进行设置。）'''
+    description_welcome_tips_set_account = '''您取消了管理帐户设置！禁用合盖睡眠将无法使用。（您可以在偏好设置中找到管理帐户设置。）'''
+    description_welcome_end = '''很好！现在SleeperX可以开始工作了。
+Enjoy yourself!'''
+    unable_to_pmset = '''无法更改“电源管理设置”！
+请检查您的管理员帐户（用户名和密码）是否正确。
+
+如果管理帐户是正确的，但始终无法使用，您可以尝试导出日志（在“偏好设置”-“高级选项”），并发送到这个项目的 issues 页面。'''
+
     menu_sleep_now = '立即睡眠'
     menu_display_sleep_now = '立即关闭显示器'
     menu_disable_lid_sleep = '阻止合盖睡眠'
@@ -54,33 +65,40 @@ class Chinese(English):
     menu_disable_lid_sleep_in_charging = '在接通电源时阻止合盖睡眠'
     menu_preferences = '偏好设置'
     menu_advanced_options = '高级选项'
-    menu_lock_screen_on_lid = '在合盖时锁定屏幕（阻止合盖睡眠时使用）'
-    menu_short_time_cancel_lock_screen = '短时间内取消锁屏（合盖时3秒内可取消）'
+    menu_screen_save_on_lid = '在合盖时开启屏幕保护（阻止合盖睡眠时使用）'
+    menu_short_time_cancel_screen_save = '短时间内取消屏幕保护（合盖时3秒内可取消）'
     menu_low_battery_capacity_sleep = '低电量睡眠（黑苹果特性）'
     menu_set_low_battery_capacity = '设置低电量临界值'
     menu_set_low_time_remaining = '设置续航时间临界值'
+    menu_set_username = '设置管理员用户名 (非管理员用户使用)'
     menu_set_password = '设置管理员用户密码'
-    menu_set_username = '设置管理员用户名 (可选)'
     menu_select_language = '设置语言'
     menu_set_startup = '设置登陆启动'
     menu_set_sleep_mode = '设置睡眠模式'
     menu_check_update = '检查更新'
+    menu_clear_config = '清空配置文件'
+    menu_export_log = '导出日志文件'
     menu_about = '关于'
     menu_quit = '退出'
+
     view_percent = '剩余电量: %d%%'
     view_status = '充电状态: %s'
     view_remaining = '剩余时间: %s'
     view_remaining_time = '%d 分钟'
     view_remaining_counting = '(计算中...)'
+
     status_charging = {'not charging': '未在充电', 'discharging': '正在放电', 'charging': '正在充电',
                        'finishing charge': '即将充满', 'charged': '已充满'}
+
     title_crash = '应用崩溃'
-    title_export_log = '导出日志文件'
+    title_welcome = '欢迎使用'
+
     noti_update_version = '发现新版本: %s'
     noti_update_time = '发布时间: %s'
     noti_update_none = '当前已是最新版本。'
     noti_update_star = '（如果你喜欢这个应用，请在GitHub给我个star，thanks。）'
     noti_network_error = '网络出现问题，请稍后重试。'
+
     sleep_mode_0 = '模式0'
     sleep_mode_3 = '模式3'
     sleep_mode_25 = '模式25'

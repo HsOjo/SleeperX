@@ -1,3 +1,5 @@
+import os
+import sys
 import time
 from threading import Thread
 
@@ -6,6 +8,7 @@ import rumps
 import common
 from res.const import Const
 from res.language import load_language, LANGUAGES
+from res.language.english import English
 from util import osa_api, system_api, github
 from .config import Config
 from .process_daemon import ProcessDaemon
@@ -13,9 +16,11 @@ from .process_daemon import ProcessDaemon
 
 class Application:
     def __init__(self):
-        common.log('app_init', 'Info', 'version: %s' % Const.version)
+        common.log('app_init', 'Info', 'version: %s' % Const.version, system_api.get_system_version())
 
         Config.load()
+
+        self.is_admin = system_api.check_admin()
 
         self.lang = load_language(Config.language)
 
@@ -33,8 +38,8 @@ class Application:
         self.menu_disable_lid_sleep_in_charging = None  # type: rumps.MenuItem
         self.menu_low_battery_capacity_sleep = None  # type: rumps.MenuItem
         self.menu_check_update = None  # type: rumps.MenuItem
-        self.menu_lock_screen_on_lid = None  # type: rumps.MenuItem
-        self.menu_short_time_cancel_lock_screen = None  # type: rumps.MenuItem
+        self.menu_screen_save_on_lid = None  # type: rumps.MenuItem
+        self.menu_short_time_cancel_screen_save = None  # type: rumps.MenuItem
 
         self.init_menu()
         self.battery_status = None  # type: dict
@@ -77,15 +82,20 @@ class Application:
             """
 
             def set_input(sender: rumps.MenuItem):
-                content = osa_api.dialog_input(sender.title, description, str(getattr(Config, key, '')), hidden=hidden)
+                content = osa_api.dialog_input(sender.title, getattr(self.lang, description),
+                                               str(getattr(Config, key, '')), hidden=hidden)
 
-                if to_int:
-                    if isinstance(content, str) and content.isnumeric():
-                        setattr(Config, key, int(content))
-                else:
-                    setattr(Config, key, content)
+                if content is not None:
+                    if to_int:
+                        if isinstance(content, str) and content.isnumeric():
+                            setattr(Config, key, int(content))
+                    else:
+                        setattr(Config, key, content)
 
-                Config.save()
+                    Config.save()
+                    return True
+
+                return False
 
             return set_input
 
@@ -94,73 +104,83 @@ class Application:
         g_menu('view_status')
         g_menu('view_remaining')
         g_menu('-')
-        g_menu('sleep_now', self.lang.menu_sleep_now,
-               lambda _: self.sleep())
 
-        g_menu('display_sleep_now', self.lang.menu_display_sleep_now,
-               lambda _: system_api.sleep(display_only=True))
+        def sleep_now(sender: rumps.MenuItem):
+            if not self.sleep():
+                self.message_box(sender.title, self.lang.unable_to_pmset)
+
+        g_menu('sleep_now', callback=sleep_now)
+
+        g_menu('display_sleep_now', callback=lambda _: system_api.sleep(display_only=True))
 
         g_menu('-')
-        self.menu_disable_idle_sleep = g_menu('disable_idle_sleep', self.lang.menu_disable_idle_sleep,
-                                              lambda sender: self.set_idle_sleep(sender.state))
+        self.menu_disable_idle_sleep = g_menu('disable_idle_sleep',
+                                              callback=lambda sender: self.set_idle_sleep(sender.state))
 
-        self.menu_disable_lid_sleep = g_menu('disable_lid_sleep', self.lang.menu_disable_lid_sleep,
-                                             lambda sender: self.set_lid_sleep(sender.state))
+        def disable_lid_sleep(sender: rumps.MenuItem):
+            if not self.set_lid_sleep(sender.state):
+                self.message_box(sender.title, self.lang.unable_to_pmset)
+
+        self.menu_disable_lid_sleep = g_menu('disable_lid_sleep',
+                                             callback=disable_lid_sleep)
 
         g_menu('-')
         self.menu_preferences = g_menu('preferences', self.lang.menu_preferences)
-        self.menu_select_language = g_menu('select_language', self.lang.menu_select_language, self.select_language)
-        g_menu('-')
-        self.menu_check_update = g_menu('check_update', self.lang.menu_check_update,
-                                        lambda sender: Thread(target=self.check_update, args=(sender,)).start())
+        self.menu_select_language = g_menu('select_language', callback=lambda _: self.select_language())
 
-        g_menu('about', self.lang.menu_about, self.about)
         g_menu('-')
-        g_menu('quit', self.lang.menu_quit, lambda _: self.quit())
+        self.menu_check_update = g_menu('check_update', callback=(
+            lambda sender: Thread(target=self.check_update, args=(sender,)).start()
+        ))
+
+        g_menu('about', callback=lambda _: self.about())
+        g_menu('-')
+        g_menu('quit', callback=lambda _: self.quit())
         # menu_application end
 
         # menu_preferences
-        g_menu('set_startup', self.lang.menu_set_startup, self.set_startup, parent=self.menu_preferences)
+        g_menu('set_startup', callback=lambda _: self.set_startup, parent=self.menu_preferences)
         g_menu('-', parent=self.menu_preferences)
 
         set_low_battery_capacity = g_config_input_action(
-            'low_battery_capacity', self.lang.description_set_low_battery_capacity, to_int=True)
-        g_menu('set_low_battery_capacity', self.lang.menu_set_low_battery_capacity, set_low_battery_capacity,
+            'low_battery_capacity', 'description_set_low_battery_capacity', to_int=True)
+        g_menu('set_low_battery_capacity', callback=set_low_battery_capacity,
                parent=self.menu_preferences)
 
         set_low_time_remaining = g_config_input_action(
-            'low_time_remaining', self.lang.description_set_low_time_remaining, to_int=True)
-        g_menu('set_low_time_remaining', self.lang.menu_set_low_time_remaining, set_low_time_remaining,
+            'low_time_remaining', 'description_set_low_time_remaining', to_int=True)
+        g_menu('set_low_time_remaining', callback=set_low_time_remaining,
                parent=self.menu_preferences)
 
         g_menu('-', parent=self.menu_preferences)
 
         self.menu_disable_idle_sleep_in_charging = g_menu(
-            'disable_idle_sleep_in_charging', self.lang.menu_disable_idle_sleep_in_charging,
-            g_switch_config_action('disable_idle_sleep_in_charging'), parent=self.menu_preferences)
+            'disable_idle_sleep_in_charging', callback=g_switch_config_action('disable_idle_sleep_in_charging'),
+            parent=self.menu_preferences)
 
         self.menu_disable_lid_sleep_in_charging = g_menu(
-            'disable_lid_sleep_in_charging', self.lang.menu_disable_lid_sleep_in_charging,
-            g_switch_config_action('disable_lid_sleep_in_charging'), parent=self.menu_preferences)
+            'disable_lid_sleep_in_charging', callback=g_switch_config_action('disable_lid_sleep_in_charging'),
+            parent=self.menu_preferences)
 
         g_menu('-', parent=self.menu_preferences)
 
-        self.menu_lock_screen_on_lid = g_menu(
-            'lock_screen_on_lid', self.lang.menu_lock_screen_on_lid,
-            g_switch_config_action('lock_screen_on_lid'), parent=self.menu_preferences)
+        self.menu_screen_save_on_lid = g_menu(
+            'screen_save_on_lid', callback=g_switch_config_action('screen_save_on_lid'), parent=self.menu_preferences)
 
-        self.menu_short_time_cancel_lock_screen = g_menu(
-            'short_time_cancel_lock_screen', self.lang.menu_short_time_cancel_lock_screen,
-            g_switch_config_action('short_time_cancel_lock_screen'), parent=self.menu_preferences)
-
-        g_menu('-', parent=self.menu_preferences)
-
-        set_password = g_config_input_action('password', self.lang.description_set_password, hidden=True)
-        g_menu('set_password', self.lang.menu_set_password, set_password, parent=self.menu_preferences)
+        self.menu_short_time_cancel_screen_save = g_menu(
+            'short_time_cancel_screen_save', callback=g_switch_config_action('short_time_cancel_screen_save'),
+            parent=self.menu_preferences)
 
         g_menu('-', parent=self.menu_preferences)
-        self.menu_advanced_options = g_menu('advanced_options', self.lang.menu_advanced_options,
-                                            parent=self.menu_preferences)
+
+        set_username = g_config_input_action('username', 'description_set_username')
+        g_menu('set_username', callback=set_username, parent=self.menu_preferences)
+
+        set_password = g_config_input_action('password', 'description_set_password', hidden=True)
+        g_menu('set_password', callback=set_password, parent=self.menu_preferences)
+
+        g_menu('-', parent=self.menu_preferences)
+        self.menu_advanced_options = g_menu('advanced_options', parent=self.menu_preferences)
 
         # menu_preferences end
 
@@ -178,52 +198,78 @@ class Application:
 
         # menu_advanced_options
         self.menu_low_battery_capacity_sleep = g_menu(
-            'low_battery_capacity_sleep', self.lang.menu_low_battery_capacity_sleep,
-            g_switch_config_action('low_battery_capacity_sleep'), parent=self.menu_advanced_options)
+            'low_battery_capacity_sleep', callback=g_switch_config_action('low_battery_capacity_sleep'),
+            parent=self.menu_advanced_options)
 
         g_menu('-', parent=self.menu_advanced_options)
 
-        set_username = g_config_input_action('username', self.lang.description_set_username)
-        g_menu('set_username', self.lang.menu_set_username, set_username, parent=self.menu_advanced_options)
+        g_menu('set_sleep_mode', callback=self.set_sleep_mode,
+               parent=self.menu_advanced_options)
 
         g_menu('-', parent=self.menu_advanced_options)
 
-        g_menu('set_sleep_mode', self.lang.menu_set_sleep_mode, self.set_sleep_mode,
+        g_menu('export_log', callback=lambda _: self.export_log(),
+               parent=self.menu_advanced_options)
+
+        g_menu('-', parent=self.menu_advanced_options)
+
+        g_menu('clear_config', callback=lambda _: Config.clear(),
                parent=self.menu_advanced_options)
         # menu_advanced_options end
 
         # update menus title.
         for k, v in self.menu.items():
-            v['parent'][v['name']].title = v['title']
-            del v['title']
+            if v['title'] is not None:
+                v['object'].title = v['title']
+                del v['title']
+        self.refresh_menu_title()
 
         # inject value to menu.
         self.menu_disable_idle_sleep_in_charging.state = Config.disable_idle_sleep_in_charging
         self.menu_disable_lid_sleep_in_charging.state = Config.disable_lid_sleep_in_charging
         self.menu_low_battery_capacity_sleep.state = Config.low_battery_capacity_sleep
-        self.menu_lock_screen_on_lid.state = Config.lock_screen_on_lid
-        self.menu_short_time_cancel_lock_screen.state = Config.short_time_cancel_lock_screen
+        self.menu_screen_save_on_lid.state = Config.screen_save_on_lid
+        self.menu_short_time_cancel_screen_save.state = Config.short_time_cancel_screen_save
 
-    @property
-    def _admin_account(self):
-        return dict(user=Config.username, pwd=Config.password)
+        [info, _] = system_api.sleep_info()
+        self.menu_disable_lid_sleep.state = info.get('SleepDisabled', False)
+
+    def refresh_menu_title(self):
+        for k, v in self.menu.items():
+            if 'menu_%s' % k in dir(self.lang):
+                title = getattr(self.lang, 'menu_%s' % k)
+                v['object'].title = title
+
+    def admin_exec(self, command):
+        code = -1
+
+        if Config.username != '':
+            code, out, err = osa_api.run_as_admin(command, Config.password, Config.username)
+        else:
+            if self.is_admin:
+                code, out, err = system_api.sudo(command, Config.password)
+                common.log(self.admin_exec, 'Info', {'command': command, 'status': code, 'output': out, 'error': err})
+
+        if code != 0:
+            return False
+
+        return True
 
     def set_menu_title(self, name, title):
         self.app.menu[name].title = title
 
     def refresh_view(self):
-        self.set_menu_title('view_percent',
-                            self.lang.view_percent % self.battery_status['percent'])
+        self.set_menu_title(
+            'view_percent', self.lang.view_percent % self.battery_status['percent'])
 
-        self.set_menu_title('view_status',
-                            self.lang.view_status % (
-                                self.lang.status_charging.get(self.battery_status['status'], self.lang.unknown)))
+        self.set_menu_title(
+            'view_status', self.lang.view_status % (
+                self.lang.status_charging.get(self.battery_status['status'], self.lang.unknown)))
 
-        self.set_menu_title('view_remaining',
-                            self.lang.view_remaining % (
-                                (self.lang.view_remaining_time % self.battery_status['remaining'])
-                                if self.battery_status[
-                                       'remaining'] is not None else self.lang.view_remaining_counting))
+        self.set_menu_title(
+            'view_remaining', self.lang.view_remaining % (
+                (self.lang.view_remaining_time % self.battery_status['remaining'])
+                if self.battery_status['remaining'] is not None else self.lang.view_remaining_counting))
 
     def refresh_sleep_idle_time(self):
         [info, note] = system_api.sleep_info()
@@ -287,19 +333,19 @@ class Application:
     def callback_lid_status_changed(self, status, status_prev=None):
         common.log(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         if status:
-            if Config.lock_screen_on_lid:
-                if Config.short_time_cancel_lock_screen:
+            if Config.screen_save_on_lid:
+                if Config.short_time_cancel_screen_save:
                     @common.wait_and_check(3, 0.5)
                     def check_lock():
                         return system_api.check_lid()
 
                     valid = check_lock()
                     if valid:
-                        osa_api.lock_screen()
+                        osa_api.screen_save()
                     else:
                         common.log('check_lock', 'Info', 'user cancel lock screen.')
                 else:
-                    osa_api.lock_screen()
+                    osa_api.screen_save()
 
     def callback_charge_status_changed(self, status, status_prev=None):
         common.log(self.callback_charge_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
@@ -322,25 +368,28 @@ class Application:
         if osa_api.alert(self.lang.title_crash, self.lang.description_crash):
             self.export_log()
 
-    def select_language(self, sender: rumps.MenuItem):
+    def select_language(self):
         items = []
         for k in LANGUAGES:
             items.append(LANGUAGES[k].l_this)
 
-        index = osa_api.choose_from_list(sender.title, LANGUAGES['en'].description_select_language, items)
+        index = osa_api.choose_from_list(English.menu_select_language, English.description_select_language, items)
         if index is not None:
             language = None
             description = items[index]
             for k, v in LANGUAGES.items():
-                if description == v['l_this']:
+                if description == v.l_this:
                     language = k
                     break
 
             if language is not None:
                 self.set_language(language)
+                return True
 
-    def set_startup(self, sender: rumps.MenuItem):
-        res = osa_api.alert(sender.title, self.lang.description_set_startup)
+        return False
+
+    def set_startup(self):
+        res = osa_api.alert(self.lang.menu_set_startup, self.lang.description_set_startup)
         if res:
             osa_api.set_login_startup(*common.get_application_info())
 
@@ -361,7 +410,7 @@ class Application:
                                     items, default)
         mode = items_value.get(res)
         if mode is not None and mode != info['hibernatemode']:
-            system_api.set_sleep_mode(mode, **self._admin_account)
+            system_api.set_sleep_mode(mode, self.admin_exec)
 
     def sleep(self):
         fix_idle_sleep = self.menu_disable_idle_sleep.state
@@ -402,9 +451,15 @@ class Application:
     def set_lid_sleep(self, available):
         self.menu_disable_lid_sleep.state = not available
         if available:
-            system_api.set_sleep_available(True, **self._admin_account)
+            success = system_api.set_sleep_available(True, self.admin_exec)
         else:
-            system_api.set_sleep_available(False, **self._admin_account)
+            success = system_api.set_sleep_available(False, self.admin_exec)
+
+        if not success:
+            [info, _] = system_api.sleep_info()
+            self.menu_disable_lid_sleep.state = info.get('SleepDisabled', available)
+
+        return success
 
     def set_idle_sleep(self, available):
         self.menu_disable_idle_sleep.state = not available
@@ -413,29 +468,37 @@ class Application:
         else:
             self.pd_noidle.start()
 
-    def about(self, sender: rumps.MenuItem):
-        res = osa_api.dialog_input(sender.title, self.lang.description_about % Const.version,
-                                   Const.github_page)
+    def about(self, welcome=False):
+        res = osa_api.dialog_input(self.lang.menu_about if not welcome else self.lang.title_welcome,
+                                   self.lang.description_about % Const.version, Const.github_page)
+
+        if isinstance(res, str):
+            res = res.strip().lower()
+
         if res == ':export log':
             self.export_log()
         elif res == ':check update':
             self.check_update(self.menu_check_update, True)
-        elif res == Const.github_page:
+        elif res == ':restart':
+            self.restart()
+        elif res == Const.github_page and not welcome:
             system_api.open_url(Const.github_page)
 
     def export_log(self):
-        folder = osa_api.choose_folder(self.lang.title_export_log)
+        folder = osa_api.choose_folder(self.lang.menu_export_log)
         if folder is not None:
             log = common.extract_log().replace(Config.password, Const.pwd_hider)
             with open('%s/%s' % (folder, 'SleeperX_log.txt'), 'w', encoding='utf8') as io:
                 io.write(log)
 
-    def quit(self):
+    def quit(self, reset_only=False):
         self.pd_noidle.stop()
         [info, _] = system_api.sleep_info()
         if info.get('SleepDisabled', False):
-            system_api.set_sleep_available(True, **self._admin_account)
-        rumps.quit_application()
+            system_api.set_sleep_available(True, self.admin_exec)
+
+        if not reset_only:
+            rumps.quit_application()
 
     def check_update(self, sender, test=False):
         try:
@@ -462,18 +525,73 @@ class Application:
             if sender == self.menu_check_update:
                 rumps.notification(sender.title, '', self.lang.noti_network_error)
 
+    def message_box(self, title, description):
+        return osa_api.dialog_select(title, description, [self.lang.ok])
+
+    def welcome(self):
+        self.about(True)
+        self.select_language()
+
+        self.message_box(self.lang.title_welcome, self.lang.description_welcome_why_need_admin)
+
+        cancel_account = False
+
+        if not self.is_admin:
+            # set username
+            menu_set_username = self.menu['set_username']
+            if not menu_set_username['callback'](menu_set_username['object']) or Config.username == '':
+                cancel_account = True
+        else:
+            self.message_box(self.lang.title_welcome, self.lang.description_welcome_is_admin)
+
+        if not cancel_account:
+            # set password
+            menu_set_password = self.menu['set_password']
+            if not menu_set_password['callback'](menu_set_password['object']):
+                cancel_account = True
+
+        if cancel_account:
+            self.message_box(self.lang.title_welcome, self.lang.description_welcome_tips_set_account)
+
+        self.message_box(self.lang.title_welcome, self.lang.description_welcome_end)
+
+        Config.welcome = False
+        Config.save()
+
     def run(self):
+        if Config.welcome:
+            self.welcome()
+
         t_refresh = rumps.Timer(self.callback_refresh, 1)
         t_refresh.start()
         self.app.icon = '%s/res/icon.png' % common.get_resource_dir()
         self.app.run()
 
     def restart(self):
+        self.quit(True)
+
         [_, path] = common.get_application_info()
-        system_api.open_url(path, True)
-        self.quit()
+        if path is not None:
+            system_api.open_url(path, True)
+        else:
+            # quick restart for debug.
+            self.app.title = '\x00'
+            self.app.icon = None
+
+            runtime_paths = []
+            for x in sys.path:
+                path = '%s/../../bin/python' % x
+                if 'python' in x and os.path.isdir(x) and os.path.exists(path):
+                    path = os.path.abspath(path)
+                    runtime_paths.append(path)
+
+            if len(runtime_paths) > 0:
+                os.system('%s %s' % (runtime_paths[0], ' '.join(sys.argv)))
+
+        rumps.quit_application()
 
     def set_language(self, language):
+        self.lang = LANGUAGES[language]()
+        self.refresh_menu_title()
         Config.language = language
         Config.save()
-        self.restart()

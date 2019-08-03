@@ -1,6 +1,3 @@
-import traceback
-from io import StringIO
-
 import common
 
 
@@ -47,7 +44,7 @@ class ObjectConvertor:
 
 class AppleScript:
     @staticmethod
-    def exec(code: str):
+    def exec(code: str, timeout=None):
         stat = -1
         out = ''
 
@@ -57,12 +54,9 @@ class AppleScript:
             p.stdin.close()
             out = p.stdout.read()
             err = p.stderr.read()
-            stat = p.wait()
+            stat = p.wait(timeout)
         except:
-            with StringIO() as io:
-                traceback.print_exc(file=io)
-                io.seek(0)
-                err = io.read()
+            err = common.get_exception()
 
         common.log(AppleScript.exec, 'AppleScript', {'code': code, 'status': stat, 'output': out, 'error': err})
 

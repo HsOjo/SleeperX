@@ -126,6 +126,6 @@ def set_login_startup(name, path, hidden=False):
         return False
 
 
-def lock_screen():
+def screen_save():
     code = '''tell application id "com.apple.ScreenSaver.Engine" to launch'''
     [stat, out, err] = AppleScript.exec(code)
