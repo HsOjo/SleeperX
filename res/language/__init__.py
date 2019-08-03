@@ -13,11 +13,13 @@ class Language:
 
 
 def load_language(code):
-    from .chinese import Chinese
     from .english import English
+    from .chinese import Chinese
+    from .chinese_t import TraditionalChinese
 
     LANGUAGES['en'] = English
     LANGUAGES['cn'] = Chinese
+    LANGUAGES['cn_t'] = TraditionalChinese
 
     language = LANGUAGES.get(code, English)()  # type: English
     return language

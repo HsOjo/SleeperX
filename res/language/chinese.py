@@ -2,14 +2,14 @@ from .english import English
 
 
 class Chinese(English):
-    l_this = '中文'
+    l_this = '简体中文'
     unknown = '未知内容: (%s)'
     cancel = '取消'
     ok = '确定'
 
     description_about = '''SleeperX 版本 %s
 
-在黑苹果实现自动睡眠功能。
+在黑苹果下实现自动睡眠功能。
 可以有效防止电池电量不足，导致直接断电关机。
 
 在接通电源时，可以自动禁止睡眠。
@@ -30,8 +30,8 @@ class Chinese(English):
 (只在非充电状态有效。)'''
     description_crash = '''卧槽! SleeperX崩溃了!
 接下来将导出日志，请将日志提交给开发者，谢谢配合。'''
-    description_set_startup = '''你确定要将该应用添加到登陆启动项吗？
-(你可以在 `系统偏好设置` - `用户与群组` - `登陆项`取消。)'''
+    description_set_startup = '''你确定要将该应用添加到登录启动项吗？
+(你可以在 `系统偏好设置` - `用户与群组` - `登录项`取消。)'''
     description_set_sleep_mode = '''模式0：默认在台式机上使用。
 系统不会将内存备份到持久存储（磁盘）。
 系统必须从内存的内容中唤醒；否则断电将丢失使用状态。
@@ -44,7 +44,7 @@ class Chinese(English):
 系统将内存的副本存储到持久存储（磁盘），并将切断内存的电源。
 如果你想要“休眠”——睡眠会更慢，唤醒会更慢，但电池寿命越长，你应该使用这个设置。
 
-(仅在macOS 10.14测试成功, 10.13以下的老版本情况会有所不同。)
+(仅在macOS 10.14测试成功, 10.13以下的旧版本情况会有所不同。)
 
 当前模式：%s'''
     description_welcome_why_need_admin = '''您需要输入管理员帐户以授予SleeperX权限。因为SleeperX会更改“电源管理设置”。（阻止合盖睡眠）'''
@@ -73,7 +73,7 @@ Enjoy yourself!'''
     menu_set_username = '设置管理员用户名 (非管理员用户使用)'
     menu_set_password = '设置管理员用户密码'
     menu_select_language = '设置语言'
-    menu_set_startup = '设置登陆启动'
+    menu_set_startup = '设置登录启动'
     menu_set_sleep_mode = '设置睡眠模式'
     menu_check_update = '检查更新'
     menu_clear_config = '清空配置文件'
