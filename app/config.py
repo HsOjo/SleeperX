@@ -27,7 +27,7 @@ class Config:
                 with open(CONFIG_FILE, 'r', encoding='utf8') as io:
                     config = json.load(io)
                     config['password'] = base64.b64decode(config['password'][::-1].encode()).decode()
-                    common.dict_to_obj(config, Config, new_fields=False)
+                    common.dict_to_object(config, Config, new_fields=False)
                     common.log('config_load', 'Info', common.object_to_dict(Config))
         except:
             pass

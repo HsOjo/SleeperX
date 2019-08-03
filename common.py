@@ -133,9 +133,9 @@ def object_to_dict(obj):
     return r
 
 
-def dict_to_obj(d: dict, obj=object(), new_fields=True):
+def dict_to_object(d: dict, obj=object(), new_fields=True):
     for k, v in d.items():
-        if new_fields or hasattr(obj, k):
+        if new_fields or k in dir(obj):
             setattr(obj, k, v)
 
 
