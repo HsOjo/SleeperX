@@ -6,7 +6,7 @@ import requests
 from execjs import eval as js_eval
 
 
-class GoogleTranlate:
+class GoogleTranslate:
     lang = {
         'cn': 'zh-cn',
         'jp': 'ja',
@@ -114,6 +114,6 @@ var b = function (a, b) {
 
 
 if __name__ == '__main__':
-    gt = GoogleTranlate()
+    gt = GoogleTranslate()
     print(gt.translate('服を赤く染めている。', 'ja', 'cn'))
     print(gt.translate('かんぱーい！', 'ja', 'cn'))

@@ -3,7 +3,7 @@ import os
 
 import common
 from .baidu_translate import BaiduTranslate
-from .google_translate import GoogleTranlate
+from .google_translate import GoogleTranslate
 
 CONFIG_FILE = '%s/tools/translate/config.json' % common.get_runtime_dir()
 

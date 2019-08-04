@@ -17,11 +17,13 @@ def load_language(code='en'):
     from .chinese import Chinese
     from .chinese_t import TraditionalChinese
     from .japanese import Japanese
+    from .korean import Korean
 
     LANGUAGES['en'] = English
     LANGUAGES['cn'] = Chinese
     LANGUAGES['cn_t'] = TraditionalChinese
     LANGUAGES['jp'] = Japanese
+    LANGUAGES['ko'] = Korean
 
     language = LANGUAGES.get(code, English)()  # type: English
     return language
