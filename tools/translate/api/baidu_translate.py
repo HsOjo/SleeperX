@@ -9,7 +9,7 @@ class BaiduTranslate:
     lang = {
         'cn': 'zh',
         'jp': 'jp',
-        'kor': 'ko',
+        'ko': 'kor',
     }
 
     def __init__(self, appid, key):
@@ -18,6 +18,9 @@ class BaiduTranslate:
         self.buffer = {}
 
     def _translate(self, content, lang_from, lang_to):
+        if content.strip() == '':
+            return content
+
         url = 'http://fanyi-api.baidu.com/api/trans/vip/translate'
         salt = 0
         sign = md5((self.appid + content + str(salt) + self.key).encode('utf-8')).hexdigest()
@@ -53,17 +56,20 @@ class BaiduTranslate:
                     if res is not None:
                         return res
 
+        lines = content.split('\n')
         ret = ''
-        line = content.replace('\n', ' ')
-        while True:
-            try:
-                if ret != '':
-                    ret += '\n'
-                ret += self._translate(line, lang_from, lang_to)
-                break
-            except:
-                print_exc()
-                sleep(3)
+
+        for line in lines:
+            while True:
+                try:
+                    t = self._translate(line, lang_from, lang_to)
+                    if ret != '':
+                        ret += '\n'
+                    ret += t
+                    break
+                except:
+                    print_exc()
+                    time.sleep(1)
 
         if buffer:
             if self.buffer.get(lang_from) is None:

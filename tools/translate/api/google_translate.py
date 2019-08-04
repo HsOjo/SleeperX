@@ -16,6 +16,9 @@ class GoogleTranslate:
         self.buffer = {}
 
     def _translate(self, content, lang_from, lang_to):
+        if content.strip() == '':
+            return content
+
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
         }
@@ -49,20 +52,25 @@ var b = function (a, b) {
 } 
 ''' + '("%s","%s")' % (content.replace('\n', '\\n').replace('"', '\\"'), tkk))
 
-        param = {
+        params = {
+            'client': 'webapp',
             'sl': lang_from,
             'tl': lang_to,
             'hl': lang_to,
             'q': content,
             'tk': tk,
+            'otf': 2,
+            'ssel': 0,
+            'tsel': 0,
+            'kc': 1,
         }
 
         result = None
-        for i in range(10):
+        for i in range(5):
             try:
                 resp = session.get(
-                    'https://translate.google.cn/translate_a/single?client=t&dt=bd&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8',
-                    params=param, headers=headers, timeout=10)
+                    'https://translate.google.cn/translate_a/single?dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8',
+                    params=params, headers=headers, timeout=10)
                 result = resp.json()[0][0][0]
                 break
             except:

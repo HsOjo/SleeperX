@@ -15,36 +15,35 @@ class TranslateLanguage(English):
     def __init__(self):
         self._data_path = '%s/res/language/translate/%s.json' % (
             common.get_runtime_dir(), self._resource_name[self._resource_name.rfind('.') + 1:])
+        self._translated = self.load_local_translate()
 
-        translate = True
+    def load_local_translate(self):
         if os.path.exists(self._data_path):
             try:
                 with open(self._data_path, 'r') as io:
                     language = json.load(io)
                 common.dict_to_object(language, self, False)
-                translate = False
+                return True
             except:
                 pass
 
-        if translate:
-            self.online_translate()
-            language = common.object_to_dict(self)
-            with open(self._data_path, 'w') as io:
-                json.dump(language, io, ensure_ascii=False, indent=4)
+        return False
 
-    def online_translate(self):
+    def save_current_translate(self):
+        language = common.object_to_dict(self)
+        with open(self._data_path, 'w') as io:
+            json.dump(language, io, ensure_ascii=False, indent=4)
+
+    def online_translate(self, ot):
         def replace(text):
             for i, c in self._replace_words.items():
                 text = text.replace(i, c)
             return text
 
-        from tools.translate import google_translate
-        gt = google_translate()
-
         def translate(text):
             _text = text
             text = replace(text)
-            text = gt.translate(text, self._translate_from, self._translate_to)
+            text = ot.translate(text, self._translate_from, self._translate_to)
             text = replace(text)
             common.log(self.online_translate, 'Translate', '\n%s\n%s' % (_text, text))
             return text
@@ -55,6 +54,7 @@ class TranslateLanguage(English):
                 if isinstance(v, str):
                     setattr(self, k, translate(v))
                 elif isinstance(v, dict):
+                    v = v.copy()
                     for kk, vv in v.items():
                         v[kk] = translate(vv)
                     setattr(self, k, v)

@@ -32,6 +32,7 @@ class TraditionalChinese(Chinese):
                 if isinstance(v, str):
                     setattr(self, k, translate(v))
                 elif isinstance(v, dict):
+                    v = v.copy()
                     for kk, vv in v.items():
                         v[kk] = translate(vv)
                     setattr(self, k, v)

@@ -8,7 +8,9 @@ class Japanese(TranslateLanguage):
     _translate_from = 'cn'
     _translate_to = 'jp'
     _replace_words = {
-        '％': '%'
+        '％': '%',
+        ':%': ': %',
+        '%1 s': '%s',
     }
 
     l_this = '日本語'

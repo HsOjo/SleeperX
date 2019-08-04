@@ -7,6 +7,7 @@ import common
 from res.const import Const
 from res.language import load_language, LANGUAGES
 from res.language.translate_language import TranslateLanguage
+from tools.translate import *
 
 datas = {}
 
@@ -30,6 +31,14 @@ load_language()
 for lang_type in LANGUAGES.values():
     if issubclass(lang_type, TranslateLanguage):
         lang = lang_type()
+        if not lang._translated:
+            if '--translate-baidu' in sys.argv:
+                ot = baidu_translate()
+            else:
+                ot = google_translate()
+            common.log('Build', 'Translate', 'Using %s' % ot.__class__.__name__)
+            lang.online_translate(ot)
+            lang.save_current_translate()
         add_data(lang._data_path, './res/language/translate')
 
 # reset dist directory.

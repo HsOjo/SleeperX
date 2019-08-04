@@ -8,7 +8,9 @@ class Korean(TranslateLanguage):
     _translate_from = 'cn'
     _translate_to = 'ko'
     _replace_words = {
-        '％': '%'
+        '% ': '%',
+        ':%': ': %',
+        '%1 s': '%s',
     }
 
     l_this = '한국어'
