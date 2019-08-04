@@ -3,9 +3,9 @@ import sys
 
 import common
 from app import Application
-# is run at pyinstaller
 from res.const import Const
 
+# is run at pyinstaller
 if getattr(sys, 'frozen', False):
     common.fix_encoding_in_pyinstaller()
 
@@ -22,8 +22,8 @@ if getattr(sys, 'frozen', False):
     sys.stderr = common.io_err
 
 app = Application()
-try:
 
+try:
     app.run()
 except:
     app.callback_exception()

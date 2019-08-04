@@ -53,6 +53,12 @@ class Application:
             """
             if name == '-':
                 parent.add(rumps.separator)
+            elif isinstance(name, rumps.MenuItem):
+                menu = name
+                name = menu.title  # type: str
+                menu.set_callback(callback)
+                self.menu[name] = {
+                    'object': menu, 'name': name, 'title': title, 'callback': callback, 'parent': parent}
             else:
                 menu = rumps.MenuItem(name, callback=(
                     (lambda _: self.callback_menu(name)) if callback is not None else None))
@@ -489,12 +495,14 @@ class Application:
         if folder is not None:
             log = common.extract_log()
             err = common.extract_err()
+
             if Config.password != '':
                 log = log.replace(Config.password, Const.pwd_hider)
                 err = err.replace(Config.password, Const.pwd_hider)
 
-            with open('%s/%s' % (folder, '%s.log' % Const.app_name), 'w') as io:
-                io.write(log)
+            if log != '':
+                with open('%s/%s' % (folder, '%s.log' % Const.app_name), 'w') as io:
+                    io.write(log)
 
             if err != '':
                 with open('%s/%s' % (folder, '%s.err' % Const.app_name), 'w') as io:

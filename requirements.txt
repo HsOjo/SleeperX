@@ -1,0 +1,5 @@
+zhconv==1.4.0
+PyExecJS==1.5.1
+requests==2.20.1
+rumps==0.3.0
+PyInstaller==3.4
