@@ -24,7 +24,7 @@ class Config:
     def load():
         try:
             if os.path.exists(CONFIG_FILE):
-                with open(CONFIG_FILE, 'r', encoding='utf8') as io:
+                with open(CONFIG_FILE, 'r') as io:
                     config = json.load(io)
                     config['password'] = base64.b64decode(config['password'][::-1].encode()).decode()
                     common.dict_to_object(config, Config, new_fields=False)
@@ -34,7 +34,7 @@ class Config:
 
     @staticmethod
     def save():
-        with open(CONFIG_FILE, 'w', encoding='utf8') as io:
+        with open(CONFIG_FILE, 'w') as io:
             config = common.object_to_dict(Config)
             config['password'] = base64.b64encode(config['password'].encode()).decode()[::-1]
             json.dump(config, io, indent='  ')

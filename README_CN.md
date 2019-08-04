@@ -13,7 +13,7 @@
 * 安装依赖包
 
 ```bash
-pip3 install rumps pyinstaller requests
+pip3 install rumps pyinstaller requests pyexecjs zhconv
 ```
 
 * 构建

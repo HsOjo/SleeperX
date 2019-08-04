@@ -12,14 +12,16 @@ class Language:
                 return self.unknown
 
 
-def load_language(code):
+def load_language(code='en'):
     from .english import English
     from .chinese import Chinese
     from .chinese_t import TraditionalChinese
+    from .japanese import Japanese
 
     LANGUAGES['en'] = English
     LANGUAGES['cn'] = Chinese
     LANGUAGES['cn_t'] = TraditionalChinese
+    LANGUAGES['jp'] = Japanese
 
     language = LANGUAGES.get(code, English)()  # type: English
     return language

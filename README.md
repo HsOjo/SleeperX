@@ -13,7 +13,7 @@ And it can disable idle sleep or lid sleep!
 * Install Requirement.
 
 ```bash
-pip3 install rumps pyinstaller requests
+pip3 install rumps pyinstaller requests pyexecjs zhconv
 ```
 
 * Build

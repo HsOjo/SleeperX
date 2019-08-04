@@ -487,9 +487,18 @@ class Application:
     def export_log(self):
         folder = osa_api.choose_folder(self.lang.menu_export_log)
         if folder is not None:
-            log = common.extract_log().replace(Config.password, Const.pwd_hider)
-            with open('%s/%s' % (folder, 'SleeperX_log.txt'), 'w', encoding='utf8') as io:
+            log = common.extract_log()
+            err = common.extract_err()
+            if Config.password != '':
+                log = log.replace(Config.password, Const.pwd_hider)
+                err = err.replace(Config.password, Const.pwd_hider)
+
+            with open('%s/%s' % (folder, '%s.log' % Const.app_name), 'w') as io:
                 io.write(log)
+
+            if err != '':
+                with open('%s/%s' % (folder, '%s.err' % Const.app_name), 'w') as io:
+                    io.write(err)
 
     def quit(self, reset_only=False):
         self.pd_noidle.stop()
@@ -564,7 +573,7 @@ class Application:
 
         t_refresh = rumps.Timer(self.callback_refresh, 1)
         t_refresh.start()
-        self.app.icon = '%s/res/icon.png' % common.get_resource_dir()
+        self.app.icon = '%s/res/icon.png' % common.get_runtime_dir()
         self.app.run()
 
     def restart(self):

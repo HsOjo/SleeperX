@@ -8,12 +8,13 @@ from subprocess import PIPE, Popen
 from threading import Lock
 
 io_log = StringIO()
+io_err = StringIO()
 lock_log = Lock()
 
 
 # fix pyinstaller
 def popen(cmd):
-    return Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding='utf8')
+    return Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding='utf-8')
 
 
 def execute_get_out(cmd):
@@ -63,14 +64,25 @@ def compare_version(a: str, b: str, ex=False):
         return int(sa[0].replace('.', '')) < int(sb[0].replace('.', ''))
 
 
-def extract_log():
-    if isinstance(io_log, StringIO):
-        io_log.seek(0)
-        log = io_log.read()
-        io_log.seek(0, 2)
+def io_read_all(io: StringIO, default=None):
+    if io is not None:
+        io.seek(0)
+        content = io.read()
+        io.seek(0, 2)
     else:
-        log = ''
+        content = default
+    return content
+
+
+def extract_log():
+    with lock_log:
+        log = io_read_all(io_log, '')
     return log
+
+
+def extract_err():
+    err = io_read_all(io_err, '')
+    return err
 
 
 def log(src, tag='Info', *args):
@@ -94,7 +106,7 @@ def log(src, tag='Info', *args):
         source = src.__name__
 
     with lock_log:
-        print('[%s] %s\n%s' % (tag, time.ctime(), source), *log_items)
+        print('[%s] %s %s\n\t' % (tag, time.ctime(), source), *log_items)
 
 
 def wait_and_check(wait: float, step: float):
@@ -139,5 +151,30 @@ def dict_to_object(d: dict, obj=object(), new_fields=True):
             setattr(obj, k, v)
 
 
-def get_resource_dir():
+def get_runtime_dir():
     return getattr(sys, '_MEIPASS', '.')
+
+
+def fix_encoding_in_pyinstaller():
+    encoding = sys.getdefaultencoding()
+    _init = Popen.__init__
+
+    def init(*args, **kwargs):
+        kwargs['encoding'] = kwargs.get('encoding', encoding)
+        return _init(*args, **kwargs)
+
+    Popen.__init__ = init
+
+    __open = open
+
+    def _open(*args, **kwargs):
+        if len(args) >= 2:
+            mode = args[1]
+        else:
+            mode = kwargs.get('mode')
+
+        if isinstance(mode, str) and 'b' not in mode:
+            kwargs['encoding'] = kwargs.get('encoding', encoding)
+        return __open(*args, **kwargs)
+
+    __builtins__['open'] = _open

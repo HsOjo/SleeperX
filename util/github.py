@@ -44,7 +44,7 @@ def convert_datetime(text):
 
 def get_releases(url, **kwargs):
     resp = requests.get(url, **kwargs)
-    resp_str = resp.content.decode('utf8')
+    resp_str = resp.content.decode('utf-8')
 
     reg = re.compile('<div class="release-entry">[\s\S]*?<!-- /.release -->\s*</div>')
     releases = reg.findall(resp_str)
