@@ -6,6 +6,13 @@ Auto disable sleep on use AC power.
 
 And it can disable idle sleep or lid sleep!
 
+* Multiple language support ! ! !
+  * English
+  * Simple Chinese
+  * Tradtional Chinese
+  * Japanese (By Translater)
+  * Korean (By Translater)
+
 ![Thumbnail](doc/thumbnail_en.png)
 
 ## How To Build
