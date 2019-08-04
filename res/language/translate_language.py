@@ -38,8 +38,8 @@ class TranslateLanguage(English):
                 text = text.replace(i, c)
             return text
 
-        from tools.translate.api.google_translate import GoogleTranlate
-        gt = GoogleTranlate()
+        from tools.translate import google_translate
+        gt = google_translate()
 
         def translate(text):
             _text = text

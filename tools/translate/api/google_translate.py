@@ -1,6 +1,5 @@
 import re
 import time
-from time import sleep
 from traceback import print_exc
 
 import requests
@@ -100,7 +99,7 @@ var b = function (a, b) {
                     break
                 except:
                     print_exc()
-                    sleep(3)
+                    time.sleep(3)
 
         if buffer:
             if self.buffer.get(lang_from) is None:
