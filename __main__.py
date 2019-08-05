@@ -1,8 +1,7 @@
 import os
 import sys
 
-import common
-from app import Application
+from app import Application, common
 from app.res.const import Const
 
 # is run at pyinstaller

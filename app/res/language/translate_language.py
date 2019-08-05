@@ -1,7 +1,7 @@
 import json
 import os
 
-import common
+from app import common
 from tools.translate import Translator
 from .english import English
 

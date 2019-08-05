@@ -1,7 +1,7 @@
 from subprocess import Popen
 from threading import Thread, Lock
 
-import common
+from app import common
 from app.util import system_api
 
 

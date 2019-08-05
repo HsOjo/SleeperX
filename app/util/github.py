@@ -3,7 +3,7 @@ import re
 
 import requests
 
-import common
+from app import common
 
 
 def html_to_plain_text(content):

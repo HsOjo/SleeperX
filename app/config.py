@@ -2,7 +2,7 @@ import base64
 import json
 import os
 
-import common
+from app import common
 
 CONFIG_FILE = os.path.expanduser('~/Library/Application Support/com.hsojo.sleeperx')
 

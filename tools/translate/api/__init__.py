@@ -1,7 +1,7 @@
 import json
 import os
 
-import common
+from app import common
 from .baidu import BaiduTranslate
 from .google import GoogleTranslate
 from .translator import Translator

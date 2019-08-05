@@ -5,7 +5,7 @@ from threading import Thread
 
 import rumps
 
-import common
+from app import common
 from .res.const import Const
 from .res.language import load_language, LANGUAGES
 from .res.language.english import English

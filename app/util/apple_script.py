@@ -1,4 +1,4 @@
-import common
+from app import common
 
 
 class ObjectConvertor:

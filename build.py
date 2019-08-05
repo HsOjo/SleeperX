@@ -46,8 +46,7 @@ for lang_type in LANGUAGES.values():
 shutil.rmtree('./build', ignore_errors=True)
 shutil.rmtree('./dist', ignore_errors=True)
 
-add_data('./res/icon.png', './res')
-add_data('%s/zhconv/zhcdict.json' % site_package_path(), './zhconv')
+add_data('./app/res/icon.png', './app/res')
 
 data_str = ''
 for k, v in datas.items():
@@ -55,7 +54,7 @@ for k, v in datas.items():
     data_str += '--add-data "%s:%s"' % (k, v)
 
 common.log('Build', 'Info', 'Pyinstaller packing now...')
-pyi_cmd = 'pyinstaller -F -w -n "%s" -i "./res/icon.icns" %s \\\n__main__.py' % (Const.app_name, data_str)
+pyi_cmd = 'pyinstaller -F -w -n "%s" -i "./app/res/icon.icns" %s \\\n__main__.py' % (Const.app_name, data_str)
 print(pyi_cmd)
 os.system(pyi_cmd)
 os.unlink('./%s.spec' % Const.app_name)

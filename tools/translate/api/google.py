@@ -3,7 +3,6 @@ import time
 from traceback import print_exc
 
 import requests
-from execjs import eval as js_eval
 
 from .translator import Translator
 
@@ -29,6 +28,7 @@ class GoogleTranslate(Translator):
         resp = session.get('https://translate.google.cn/', headers=headers)
         [tkk] = re.findall(r"tkk:'([\d\\.]*)'", resp.text)
 
+        from execjs import eval as js_eval
         tk = js_eval('''
 function _(a,TKK) {
 var b = function (a, b) {

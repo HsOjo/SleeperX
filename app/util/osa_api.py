@@ -1,6 +1,6 @@
 import re
 
-import common
+from app import common
 from app.util.apple_script import AppleScript, ObjectConvertor
 
 
