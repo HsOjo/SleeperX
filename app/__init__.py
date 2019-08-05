@@ -6,12 +6,12 @@ from threading import Thread
 import rumps
 
 from app import common
+from .config import Config
+from .process_daemon import ProcessDaemon
 from .res.const import Const
 from .res.language import load_language, LANGUAGES
 from .res.language.english import English
 from .util import system_api, osa_api, github
-from .config import Config
-from .process_daemon import ProcessDaemon
 
 
 class Application:
@@ -496,9 +496,11 @@ class Application:
             log = common.extract_log()
             err = common.extract_err()
 
-            if Config.password != '':
-                log = log.replace(Config.password, Const.pwd_hider)
-                err = err.replace(Config.password, Const.pwd_hider)
+            for f in Config._protect_fields:
+                v = getattr(Config, f, '')
+                if v != '':
+                    log = log.replace(v, Const.protector)
+                    err = err.replace(v, Const.protector)
 
             if log != '':
                 with open('%s/%s' % (folder, '%s.log' % Const.app_name), 'w') as io:
