@@ -14,15 +14,6 @@ def add_data(src, dest):
     datas[src] = dest
 
 
-def site_package_path():
-    sp_paths = [x for x in sys.path if 'site-packages' in x]
-    if len(sp_paths) > 0:
-        sp_path = sp_paths[0]
-    else:
-        sp_path = None
-    return sp_path
-
-
 # build translate language data.
 common.log('Build', 'Info', 'Building translate data now...')
 load_language()

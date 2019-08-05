@@ -178,3 +178,12 @@ def fix_encoding_in_pyinstaller():
         return __open(*args, **kwargs)
 
     __builtins__['open'] = _open
+
+
+def site_package_path():
+    sp_paths = [x for x in sys.path if 'site-packages' in x]
+    if len(sp_paths) > 0:
+        sp_path = sp_paths[0]
+    else:
+        sp_path = None
+    return sp_path
