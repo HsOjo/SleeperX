@@ -15,8 +15,11 @@ if os.path.exists(CONFIG_FILE):
         config = json.load(io)
 
 
-def baidu_translate():
-    return BaiduTranslate(**config.get('baidu'))
+def baidu_translate(appid=None, key=None):
+    if appid is None or key is None:
+        return BaiduTranslate(**config.get('baidu'))
+    else:
+        return BaiduTranslate(appid, key)
 
 
 def google_translate():

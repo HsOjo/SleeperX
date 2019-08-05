@@ -13,6 +13,8 @@ And it can disable idle sleep or lid sleep!
   * Japanese (By Translater)
   * Korean (By Translater)
 
+This program can work normally in **macOS 10.14**. (Tested on MacBook Pro early 2015)
+
 ![Thumbnail](doc/thumbnail_en.png)
 
 ## How To Build

@@ -4,8 +4,8 @@ import os
 
 from app import common
 
-CONFIG_FILE = os.path.expanduser('~/Library/Application Support/com.hsojo.sleeperx')
-
+CONFIG_NAME = ('com.%s.%s' % (Const.author, Const.app_name)).lower()
+CONFIG_FILE = os.path.expanduser('~/Library/Application Support/%s' % CONFIG_NAME)
 
 class Config:
     _protect_fields = [
