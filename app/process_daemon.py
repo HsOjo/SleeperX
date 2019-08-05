@@ -2,7 +2,7 @@ from subprocess import Popen
 from threading import Thread, Lock
 
 import common
-from util import system_api
+from app.util import system_api
 
 
 class ProcessDaemon:

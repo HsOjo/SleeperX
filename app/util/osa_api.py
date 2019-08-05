@@ -1,7 +1,7 @@
 import re
 
 import common
-from util.apple_script import AppleScript, ObjectConvertor
+from app.util.apple_script import AppleScript, ObjectConvertor
 
 
 def run_as_admin(cmd, pwd, user=''):

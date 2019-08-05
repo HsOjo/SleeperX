@@ -3,7 +3,7 @@ import sys
 
 import common
 from app import Application
-from res.const import Const
+from app.res.const import Const
 
 # is run at pyinstaller
 if getattr(sys, 'frozen', False):

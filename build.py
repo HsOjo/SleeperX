@@ -4,9 +4,9 @@ import sys
 from zipfile import ZipFile
 
 import common
-from res.const import Const
-from res.language import load_language, LANGUAGES
-from res.language.translate_language import TranslateLanguage
+from app.res.const import Const
+from app.res.language import load_language, LANGUAGES
+from app.res.language.translate_language import TranslateLanguage
 from tools.translate import *
 
 datas = {}

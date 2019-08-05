@@ -6,10 +6,10 @@ from threading import Thread
 import rumps
 
 import common
-from res.const import Const
-from res.language import load_language, LANGUAGES
-from res.language.english import English
-from util import osa_api, system_api, github
+from .res.const import Const
+from .res.language import load_language, LANGUAGES
+from .res.language.english import English
+from .util import system_api, osa_api, github
 from .config import Config
 from .process_daemon import ProcessDaemon
 
@@ -581,7 +581,7 @@ class Application:
 
         t_refresh = rumps.Timer(self.callback_refresh, 1)
         t_refresh.start()
-        self.app.icon = '%s/res/icon.png' % common.get_runtime_dir()
+        self.app.icon = '%s/app/res/icon.png' % common.get_runtime_dir()
         self.app.run()
 
     def restart(self):
