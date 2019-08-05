@@ -1,9 +1,7 @@
-import os
 import shutil
 import sys
 from zipfile import ZipFile
 
-import common
 from app.res.const import Const
 from app.res.language import load_language, LANGUAGES
 from app.res.language.translate_language import TranslateLanguage
@@ -32,14 +30,17 @@ for lang_type in LANGUAGES.values():
     if issubclass(lang_type, TranslateLanguage):
         lang = lang_type()
         if not lang._translated:
-            if '--translate-baidu' in sys.argv:
-                ot = baidu_translate()
+            if lang._translate_to == 'cn_t':
+                translator = zhconv()
+            elif '--translate-baidu' in sys.argv:
+                translator = baidu_translate()
             else:
-                ot = google_translate()
-            common.log('Build', 'Translate', 'Using %s' % ot.__class__.__name__)
-            lang.online_translate(ot)
+                translator = google_translate()
+            common.log('Build', 'Translate', 'Using %s' % translator.__class__.__name__)
+
+            lang.translate(translator)
             lang.save_current_translate()
-        add_data(lang._data_path, './res/language/translate')
+        add_data(lang._data_path, './app/res/language/translate')
 
 # reset dist directory.
 shutil.rmtree('./build', ignore_errors=True)

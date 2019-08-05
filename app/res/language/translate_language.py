@@ -2,6 +2,7 @@ import json
 import os
 
 import common
+from tools.translate import Translator
 from .english import English
 
 
@@ -13,7 +14,7 @@ class TranslateLanguage(English):
     _replace_words = {}
 
     def __init__(self):
-        self._data_path = '%s/res/language/translate/%s.json' % (
+        self._data_path = '%s/app/res/language/translate/%s.json' % (
             common.get_runtime_dir(), self._resource_name[self._resource_name.rfind('.') + 1:])
         self._translated = self.load_local_translate()
 
@@ -34,7 +35,7 @@ class TranslateLanguage(English):
         with open(self._data_path, 'w') as io:
             json.dump(language, io, ensure_ascii=False, indent=4)
 
-    def online_translate(self, ot):
+    def translate(self, t: Translator):
         def replace(text):
             for i, c in self._replace_words.items():
                 text = text.replace(i, c)
@@ -43,9 +44,9 @@ class TranslateLanguage(English):
         def translate(text):
             _text = text
             text = replace(text)
-            text = ot.translate(text, self._translate_from, self._translate_to)
+            text = t.translate(self._translate_from, self._translate_to, text)
             text = replace(text)
-            common.log(self.online_translate, 'Translate', '\n%s\n%s' % (_text, text))
+            common.log(self.translate, 'Translate', '\n%s\n%s' % (_text, text))
             return text
 
         for k in dir(self._translate_by):

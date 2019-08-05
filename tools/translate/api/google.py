@@ -5,17 +5,19 @@ from traceback import print_exc
 import requests
 from execjs import eval as js_eval
 
+from .translator import Translator
 
-class GoogleTranslate:
-    lang = {
+
+class GoogleTranslate(Translator):
+    lang_code = {
         'cn': 'zh-cn',
         'jp': 'ja',
     }
 
     def __init__(self):
-        self.buffer = {}
+        super().__init__()
 
-    def _translate(self, content, lang_from, lang_to):
+    def __translate(self, lang_from, lang_to, content):
         if content.strip() == '':
             return content
 
@@ -81,47 +83,26 @@ var b = function (a, b) {
 
         return result
 
-    def translate(self, content, lang_from, lang_to='zh-cn', buffer=True):
-        lang_from = self.lang.get(lang_from, lang_from)
-        lang_to = self.lang.get(lang_to, lang_to)
-
-        if buffer:
-            if self.buffer.get(lang_from) is not None:
-                gt_buf_lf = self.buffer[lang_from]
-                if gt_buf_lf.get(lang_to) is not None:
-                    gt_buf_lf_lt = gt_buf_lf[lang_to]
-                    res = gt_buf_lf_lt.get(content)
-                    if res is not None:
-                        return res
-
-        lines = content.split('\n')
+    def _translate(self, lang_from, lang_to, content):
         ret = ''
-
+        lines = content.split('\n')
         for line in lines:
             while True:
                 try:
-                    t = self._translate(line, lang_from, lang_to)
+                    if self.use_buffer:
+                        line_t = self.get_buffer(lang_from, lang_to, line)
+                        if line_t is not None:
+                            line_t = self.__translate(line, lang_from, lang_to)
+                        self.set_buffer(lang_from, lang_to, line, line_t)
+                    else:
+                        line_t = self.__translate(line, lang_from, lang_to)
+
                     if ret != '':
                         ret += '\n'
-                    ret += t
+                    ret += line_t
                     break
                 except:
                     print_exc()
-                    time.sleep(3)
-
-        if buffer:
-            if self.buffer.get(lang_from) is None:
-                self.buffer[lang_from] = {}
-                gt_buf_lf = self.buffer[lang_from]
-                if gt_buf_lf.get(lang_to) is None:
-                    gt_buf_lf[lang_to] = {}
-                    gt_buf_lf_lt = gt_buf_lf[lang_to]
-                    gt_buf_lf_lt[content] = ret
+                    time.sleep(1)
 
         return ret
-
-
-if __name__ == '__main__':
-    gt = GoogleTranslate()
-    print(gt.translate('服を赤く染めている。', 'ja', 'cn'))
-    print(gt.translate('かんぱーい！', 'ja', 'cn'))

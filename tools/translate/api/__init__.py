@@ -2,8 +2,10 @@ import json
 import os
 
 import common
-from .baidu_translate import BaiduTranslate
-from .google_translate import GoogleTranslate
+from .baidu import BaiduTranslate
+from .google import GoogleTranslate
+from .translator import Translator
+from .zhconv import ZHConv
 
 CONFIG_FILE = '%s/tools/translate/config.json' % common.get_runtime_dir()
 
@@ -14,10 +16,12 @@ if os.path.exists(CONFIG_FILE):
 
 
 def baidu_translate():
-    bt = BaiduTranslate(**config.get('baidu'))
-    return bt
+    return BaiduTranslate(**config.get('baidu'))
 
 
 def google_translate():
-    gt = GoogleTranslate()
-    return gt
+    return GoogleTranslate()
+
+
+def zhconv():
+    return ZHConv()
