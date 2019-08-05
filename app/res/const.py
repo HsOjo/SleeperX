@@ -1,7 +1,8 @@
 class Const:
     author = 'HsOjo'
-    github_page = 'https://github.com/HsOjo/SleeperX'
-    releases_url = 'https://github.com/HsOjo/SleeperX/releases'
     app_name = 'SleeperX'
-    version = '1.5.1'
+    version = '1.5.2'
+    github_page = 'https://github.com/%s/%s' % (author, app_name)
+    releases_url = '%s/releases' % github_page
+
     pwd_hider = '[password]'
