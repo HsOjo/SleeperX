@@ -352,7 +352,7 @@ class Application:
                         if 0 < self.sleep_idle_time <= idle_time:
                             self.sleep()
                         if idle_time < self.idle_time:
-                            if self.idle_time > 30:
+                            if self.idle_time >= Config.time_idle_event:
                                 self.callback_idle_status_changed(self.idle_time)
                         self.idle_time = idle_time
 
@@ -384,14 +384,14 @@ class Application:
             self.callback_exception()
 
     def event_trigger(self, source, params: dict, path_event: str):
-        params_pop = []
-        for k, v in params.items():
-            if type(v) not in [None.__class__, bool, int, float, str, list, dict]:
-                params_pop.append(k)
-        for k in params_pop:
-            params.pop(k)
-
         if path_event != '':
+            params_pop = []
+            for k, v in params.items():
+                if type(v) not in [None.__class__, bool, int, float, str, list, dict]:
+                    params_pop.append(k)
+            for k in params_pop:
+                params.pop(k)
+
             [stat, out, err] = common.execute(path_event, env={Const.app_env: common.to_json(params)}, sys_env=False)
             common.log(source, 'Event',
                        {'path': path_event, 'status': stat, 'output': out, 'error': err})

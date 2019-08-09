@@ -28,6 +28,7 @@ class Config:
     event_charge_status_changed = ''
     event_idle_status_changed = ''
     event_sleep_waked_up = ''
+    time_idle_event = 30
 
     @staticmethod
     def load():
