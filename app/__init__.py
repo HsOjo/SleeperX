@@ -228,19 +228,19 @@ class Application:
         # menu_advanced_options end
 
         # menu_event_callback
-        set_lid_status_changed_event = g_config_input_action(
-            'event_lid_status_changed', 'description_set_event', empty_state=True)
-        menu_set_lid_status_changed_event = g_menu(
-            'set_lid_status_changed_event', callback=set_lid_status_changed_event,
-            parent=self.menu_event_callback)
-
         set_idle_status_changed_event = g_config_input_action(
             'event_idle_status_changed', 'description_set_event', empty_state=True)
         menu_set_idle_status_changed_event = g_menu(
             'set_idle_status_changed_event', callback=set_idle_status_changed_event,
             parent=self.menu_event_callback)
 
-        g_menu('-', parent=self.menu_advanced_options)
+        set_lid_status_changed_event = g_config_input_action(
+            'event_lid_status_changed', 'description_set_event', empty_state=True)
+        menu_set_lid_status_changed_event = g_menu(
+            'set_lid_status_changed_event', callback=set_lid_status_changed_event,
+            parent=self.menu_event_callback)
+
+        g_menu('-', parent=self.menu_event_callback)
 
         set_charge_status_changed_event = g_config_input_action(
             'event_charge_status_changed', 'description_set_event', empty_state=True)
@@ -248,7 +248,7 @@ class Application:
             'set_charge_status_changed_event', callback=set_charge_status_changed_event,
             parent=self.menu_event_callback)
 
-        g_menu('-', parent=self.menu_advanced_options)
+        g_menu('-', parent=self.menu_event_callback)
 
         set_sleep_waked_up_event = g_config_input_action(
             'event_sleep_waked_up', 'description_set_event', empty_state=True)

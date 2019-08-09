@@ -24,9 +24,9 @@ class Config:
     disable_lid_sleep_in_charging = False
     screen_save_on_lid = False
     short_time_cancel_screen_save = True
+    event_idle_status_changed = ''
     event_lid_status_changed = ''
     event_charge_status_changed = ''
-    event_idle_status_changed = ''
     event_sleep_waked_up = ''
     time_idle_event = 30
     process_timeout = 5
