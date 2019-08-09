@@ -116,11 +116,7 @@ class Application:
         g_menu('view_remaining')
         g_menu('-')
 
-        def sleep_now(sender: rumps.MenuItem):
-            if not self.sleep():
-                self.message_box(sender.title, self.lang.unable_to_pmset)
-
-        g_menu('sleep_now', callback=sleep_now)
+        g_menu('sleep_now', callback=lambda _: self.sleep())
 
         g_menu('display_sleep_now', callback=lambda _: system_api.sleep(display_only=True))
 
@@ -238,17 +234,21 @@ class Application:
             'set_lid_status_changed_event', callback=set_lid_status_changed_event,
             parent=self.menu_event_callback)
 
+        set_idle_status_changed_event = g_config_input_action(
+            'event_idle_status_changed', 'description_set_event', empty_state=True)
+        menu_set_idle_status_changed_event = g_menu(
+            'set_idle_status_changed_event', callback=set_idle_status_changed_event,
+            parent=self.menu_event_callback)
+
+        g_menu('-', parent=self.menu_advanced_options)
+
         set_charge_status_changed_event = g_config_input_action(
             'event_charge_status_changed', 'description_set_event', empty_state=True)
         menu_set_charge_status_changed_event = g_menu(
             'set_charge_status_changed_event', callback=set_charge_status_changed_event,
             parent=self.menu_event_callback)
 
-        set_idle_status_changed_event = g_config_input_action(
-            'event_idle_status_changed', 'description_set_event', empty_state=True)
-        menu_set_idle_status_changed_event = g_menu(
-            'set_idle_status_changed_event', callback=set_idle_status_changed_event,
-            parent=self.menu_event_callback)
+        g_menu('-', parent=self.menu_advanced_options)
 
         set_sleep_waked_up_event = g_config_input_action(
             'event_sleep_waked_up', 'description_set_event', empty_state=True)
@@ -289,10 +289,10 @@ class Application:
         code = -1
 
         if Config.username != '':
-            code, out, err = osa_api.run_as_admin(command, Config.password, Config.username)
+            code, out, err = osa_api.run_as_admin(command, Config.password, Config.username, timeout=Config.process_timeout)
         else:
             if self.is_admin:
-                code, out, err = system_api.sudo(command, Config.password)
+                code, out, err = system_api.sudo(command, Config.password, timeout=Config.process_timeout)
                 common.log(self.admin_exec, 'Info', {'command': command, 'status': code, 'output': out, 'error': err})
 
         if code != 0:
@@ -392,7 +392,8 @@ class Application:
             for k in params_pop:
                 params.pop(k)
 
-            [stat, out, err] = common.execute(path_event, env={Const.app_env: common.to_json(params)}, sys_env=False)
+            [stat, out, err] = common.execute(
+                path_event, env={Const.app_env: common.to_json(params)}, sys_env=False, timeout=Config.process_timeout)
             common.log(source, 'Event',
                        {'path': path_event, 'status': stat, 'output': out, 'error': err})
 

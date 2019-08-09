@@ -4,13 +4,13 @@ from app import common
 from app.util.apple_script import AppleScript, ObjectConvertor
 
 
-def run_as_admin(cmd, pwd, user=''):
+def run_as_admin(cmd, pwd, user='', timeout=None):
     cmd = ObjectConvertor.to_object(cmd)
     pwd = ObjectConvertor.to_object(pwd)
 
     [stat, out, err] = AppleScript.exec(
         'do shell script %s %spassword %s with administrator privileges' % (
-            cmd, (('user name %s ' % ObjectConvertor.to_object(user)) if user != '' else ''), pwd))
+            cmd, (('user name %s ' % ObjectConvertor.to_object(user)) if user != '' else ''), pwd), timeout)
     return stat, out, err
 
 
