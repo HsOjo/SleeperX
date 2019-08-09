@@ -13,9 +13,19 @@ And it can disable idle sleep or lid sleep!
   * Japanese (By Translater)
   * Korean (By Translater)
 
+* Events callback execute custom program support !!!
+  * Idle Status Change
+  * Lid Status Change
+  * Charge Status Change
+  * Sleep Waked Up
+
+Base on above contents, You can free to extend this program.
+
+Example: Take photo on open lid. (example code on folder "/doc/".)
+
 This program can work normally in **macOS 10.14**. (Tested on MacBook Pro early 2015)
 
-![Thumbnail](doc/thumbnail_en.png)
+![Thumbnail](doc/img/thumbnail_en.png)
 
 ## How To Build
 

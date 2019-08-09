@@ -1,3 +1,4 @@
+from app.res.const import Const
 from .english import English
 
 
@@ -47,6 +48,10 @@ class Chinese(English):
 (仅在macOS 10.14测试成功, 10.13以下的旧版本情况会有所不同。)
 
 当前模式：%s'''
+    description_set_event = '''在此输入可执行程序的路径。如果该事件被触发，将会执行这个程序。
+事件参数将通过环境变量进行传递。（JSON 格式, 键值: %s）
+
+有关更多信息，请访问 GitHub 页面下的 “doc/” 目录。（例如使用样例）''' % Const.app_env
     description_welcome_why_need_admin = '''您需要输入管理员帐户以授予SleeperX权限。因为SleeperX会更改“电源管理设置”。（阻止合盖睡眠）'''
     description_welcome_is_admin = '''当前用户是管理员，跳过了管理员用户名设置。（如果要在SleeperX上使用其他管理员帐户工作，可以稍后进行设置。）'''
     description_welcome_tips_set_account = '''您取消了管理帐户设置！禁用合盖睡眠将无法使用。（您可以在偏好设置中找到管理帐户设置。）'''
@@ -65,6 +70,11 @@ Enjoy yourself!'''
     menu_disable_lid_sleep_in_charging = '在接通电源时阻止合盖睡眠'
     menu_preferences = '偏好设置'
     menu_advanced_options = '高级选项'
+    menu_event_callback = '事件回调'
+    menu_set_lid_status_changed_event = '设置合盖状态改变事件'
+    menu_set_charge_status_changed_event = '设置充电状态改变事件'
+    menu_set_idle_status_changed_event = '设置闲置状态改变事件'
+    menu_set_sleep_waked_up_event = '设置睡眠唤醒事件'
     menu_screen_save_on_lid = '在合盖时开启屏幕保护（阻止合盖睡眠时使用）'
     menu_short_time_cancel_screen_save = '短时间内取消屏幕保护（合盖时3秒内可取消）'
     menu_low_battery_capacity_sleep = '低电量睡眠（Hackintosh特性）'

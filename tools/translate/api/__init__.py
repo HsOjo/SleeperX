@@ -11,7 +11,7 @@ CONFIG_FILE = '%s/tools/translate/config.json' % common.get_runtime_dir()
 
 config = {}
 if os.path.exists(CONFIG_FILE):
-    with open(CONFIG_FILE, 'r') as io:
+    with open(CONFIG_FILE, 'r', encoding='utf-8') as io:
         config = json.load(io)
 
 

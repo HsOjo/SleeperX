@@ -31,6 +31,7 @@ class Application:
         self.menu = {}
         self.menu_preferences = None  # type: rumps.MenuItem
         self.menu_advanced_options = None  # type: rumps.MenuItem
+        self.menu_event_callback = None  # type: rumps.MenuItem
         self.menu_select_language = None  # type: rumps.MenuItem
         self.menu_disable_idle_sleep = None  # type: rumps.MenuItem
         self.menu_disable_lid_sleep = None  # type: rumps.MenuItem
@@ -45,6 +46,7 @@ class Application:
         self.battery_status = None  # type: dict
         self.lid_stat = None  # type: bool
         self.sleep_idle_time = -1
+        self.idle_time = -1
 
     def init_menu(self):
         def g_menu(name, title='', callback=None, parent=self.app.menu):
@@ -82,7 +84,7 @@ class Application:
 
             return switch
 
-        def g_config_input_action(key, description, hidden=False, to_int=False):
+        def g_config_input_action(key, description, hidden=False, to_int=False, empty_state=False):
             """
             Generate config field input dialog menu callback function.
             """
@@ -97,6 +99,9 @@ class Application:
                             setattr(Config, key, int(content))
                     else:
                         setattr(Config, key, content)
+
+                    if empty_state:
+                        sender.state = content != ''
 
                     Config.save()
                     return True
@@ -186,6 +191,9 @@ class Application:
         g_menu('set_password', callback=set_password, parent=self.menu_preferences)
 
         g_menu('-', parent=self.menu_preferences)
+        self.menu_event_callback = g_menu('event_callback', parent=self.menu_preferences)
+
+        g_menu('-', parent=self.menu_preferences)
         self.menu_advanced_options = g_menu('advanced_options', parent=self.menu_preferences)
 
         # menu_preferences end
@@ -223,6 +231,32 @@ class Application:
                parent=self.menu_advanced_options)
         # menu_advanced_options end
 
+        # menu_event_callback
+        set_lid_status_changed_event = g_config_input_action(
+            'event_lid_status_changed', 'description_set_event', empty_state=True)
+        menu_set_lid_status_changed_event = g_menu(
+            'set_lid_status_changed_event', callback=set_lid_status_changed_event,
+            parent=self.menu_event_callback)
+
+        set_charge_status_changed_event = g_config_input_action(
+            'event_charge_status_changed', 'description_set_event', empty_state=True)
+        menu_set_charge_status_changed_event = g_menu(
+            'set_charge_status_changed_event', callback=set_charge_status_changed_event,
+            parent=self.menu_event_callback)
+
+        set_idle_status_changed_event = g_config_input_action(
+            'event_idle_status_changed', 'description_set_event', empty_state=True)
+        menu_set_idle_status_changed_event = g_menu(
+            'set_idle_status_changed_event', callback=set_idle_status_changed_event,
+            parent=self.menu_event_callback)
+
+        set_sleep_waked_up_event = g_config_input_action(
+            'event_sleep_waked_up', 'description_set_event', empty_state=True)
+        menu_set_sleep_waked_up_event = g_menu(
+            'set_sleep_waked_up_event', callback=set_sleep_waked_up_event,
+            parent=self.menu_event_callback)
+        # menu_event_callback end
+
         # update menus title.
         for k, v in self.menu.items():
             if v['title'] is not None:
@@ -239,6 +273,11 @@ class Application:
 
         [info, _] = system_api.sleep_info()
         self.menu_disable_lid_sleep.state = info.get('SleepDisabled', False)
+
+        menu_set_lid_status_changed_event.state = Config.event_lid_status_changed != ''
+        menu_set_idle_status_changed_event.state = Config.event_idle_status_changed != ''
+        menu_set_charge_status_changed_event.state = Config.event_charge_status_changed != ''
+        menu_set_sleep_waked_up_event.state = Config.event_sleep_waked_up != ''
 
     def refresh_menu_title(self):
         for k, v in self.menu.items():
@@ -294,7 +333,10 @@ class Application:
 
     def callback_refresh(self, sender: rumps.Timer):
         try:
-            if self.menu_disable_lid_sleep.state:
+            e_lid = Config.event_lid_status_changed != ''
+            e_idle = Config.event_idle_status_changed != ''
+
+            if self.menu_disable_lid_sleep.state or e_lid or e_idle:
                 # check lid status
                 lid_stat_prev = self.lid_stat
                 self.lid_stat = system_api.check_lid()
@@ -303,11 +345,16 @@ class Application:
                         self.callback_lid_status_changed(self.lid_stat, lid_stat_prev)
 
                 # check idle sleep (on disable (lid) sleep)
-                if not self.menu_disable_idle_sleep.state:
+                if not self.menu_disable_idle_sleep.state or e_idle:
                     self.refresh_sleep_idle_time()
-                    if self.sleep_idle_time > 0:
-                        if system_api.get_hid_idle_time() >= self.sleep_idle_time:
+                    if self.sleep_idle_time > 0 or e_idle:
+                        idle_time = system_api.get_hid_idle_time()
+                        if 0 < self.sleep_idle_time <= idle_time:
                             self.sleep()
+                        if idle_time < self.idle_time:
+                            if self.idle_time > 30:
+                                self.callback_idle_status_changed(self.idle_time)
+                        self.idle_time = idle_time
 
             # check battery status
             battery_status_prev = self.battery_status
@@ -336,7 +383,32 @@ class Application:
             sender.stop()
             self.callback_exception()
 
-    def callback_lid_status_changed(self, status, status_prev=None):
+    def event_trigger(self, source, params: dict, path_event: str):
+        params_pop = []
+        for k, v in params.items():
+            if type(v) not in [None.__class__, bool, int, float, str, list, dict]:
+                params_pop.append(k)
+        for k in params_pop:
+            params.pop(k)
+
+        if path_event != '':
+            [stat, out, err] = common.execute(path_event, env={Const.app_env: common.to_json(params)}, sys_env=False)
+            common.log(source, 'Event',
+                       {'path': path_event, 'status': stat, 'output': out, 'error': err})
+
+    def callback_idle_status_changed(self, idle_time: int):
+        params = locals()
+
+        self.event_trigger(self.callback_idle_status_changed, params, Config.event_idle_status_changed)
+
+    def callback_sleep_waked_up(self, sleep_time: int):
+        params = locals()
+
+        self.event_trigger(self.callback_sleep_waked_up, params, Config.event_sleep_waked_up)
+
+    def callback_lid_status_changed(self, status: bool, status_prev: bool = None):
+        params = locals()
+
         common.log(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         if status:
             if Config.screen_save_on_lid:
@@ -353,7 +425,11 @@ class Application:
                 else:
                     osa_api.screen_save()
 
-    def callback_charge_status_changed(self, status, status_prev=None):
+        self.event_trigger(self.callback_lid_status_changed, params, Config.event_lid_status_changed)
+
+    def callback_charge_status_changed(self, status: str, status_prev: str = None):
+        params = locals()
+
         common.log(self.callback_charge_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         self.refresh_sleep_idle_time()
         if status == 'discharging':
@@ -367,6 +443,8 @@ class Application:
                 self.set_idle_sleep(False)
             if Config.disable_lid_sleep_in_charging:
                 self.set_lid_sleep(False)
+
+        self.event_trigger(self.callback_charge_status_changed, params, Config.event_charge_status_changed)
 
     def callback_exception(self):
         exc = common.get_exception()
@@ -452,7 +530,11 @@ class Application:
         if fix_lid_sleep:
             self.set_lid_sleep(False)
 
-        return real_sleep_time > 5
+        is_real_sleep = real_sleep_time > 3
+        if is_real_sleep:
+            self.callback_sleep_waked_up(real_sleep_time)
+
+        return is_real_sleep
 
     def set_lid_sleep(self, available):
         self.menu_disable_lid_sleep.state = not available

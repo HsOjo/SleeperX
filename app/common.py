@@ -11,15 +11,30 @@ io_log = StringIO()
 io_err = StringIO()
 lock_log = Lock()
 
+to_json = lambda x: json.dumps(x, indent=4, ensure_ascii=False)
+from_json = lambda x: json.loads(x)
+
 
 # fix pyinstaller
-def popen(cmd):
-    return Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding='utf-8')
+def popen(cmd, sys_env=True, **kwargs):
+    if sys_env and kwargs.get('env') is not None:
+        kwargs['env'] = os.environ.copy().update(kwargs['env'])
+    return Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding='utf-8', **kwargs)
 
 
-def execute_get_out(cmd):
-    p = popen(cmd)
-    return p.stdout.read()
+def execute(cmd, input=None, timeout=None, **kwargs):
+    p = popen(cmd, **kwargs)
+    if input is not None:
+        p.stdin.write(input)
+    out = p.stdout.read()
+    err = p.stderr.read()
+    stat = p.wait(timeout)
+    return stat, out, err
+
+
+def execute_get_out(cmd, **kwargs):
+    [_, out, _] = execute(cmd, **kwargs)
+    return out
 
 
 def convert_minute(t):
@@ -86,8 +101,6 @@ def extract_err():
 
 
 def log(src, tag='Info', *args):
-    to_json = lambda x: json.dumps(x, indent=4, ensure_ascii=False)
-
     log_items = []
     for i in args:
         if isinstance(i, list) or isinstance(i, dict):

@@ -6,10 +6,10 @@ from app import common
 
 def battery_status():
     try:
-        msg = common.execute_get_out('/usr/bin/pmset -g ps')
+        content = common.execute_get_out('/usr/bin/pmset -g ps')
 
         reg = re.compile(r'(\d*%); (.*?); (.*?) present: ')
-        [res] = reg.findall(msg.replace('AC attached; not charging', 'not charging; (no estimate)'))
+        [res] = reg.findall(content.replace('AC attached; not charging', 'not charging; (no estimate)'))
 
         remaining = res[2].replace(' remaining', '')
         remaining = common.convert_minute(remaining) if remaining != '(no estimate)' else None

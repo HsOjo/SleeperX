@@ -24,6 +24,10 @@ class Config:
     disable_lid_sleep_in_charging = False
     screen_save_on_lid = False
     short_time_cancel_screen_save = True
+    event_lid_status_changed = ''
+    event_charge_status_changed = ''
+    event_idle_status_changed = ''
+    event_sleep_waked_up = ''
 
     @staticmethod
     def load():
@@ -36,7 +40,7 @@ class Config:
                     common.dict_to_object(config, Config, new_fields=False)
                     common.log('config_load', 'Info', common.object_to_dict(Config))
         except:
-            pass
+            Config.save()
 
     @staticmethod
     def save():

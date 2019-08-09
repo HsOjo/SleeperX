@@ -21,7 +21,7 @@ class TranslateLanguage(English):
     def load_local_translate(self):
         if os.path.exists(self._data_path):
             try:
-                with open(self._data_path, 'r') as io:
+                with open(self._data_path, 'r', encoding='utf-8') as io:
                     language = json.load(io)
                 common.dict_to_object(language, self, False)
                 return True
@@ -32,7 +32,7 @@ class TranslateLanguage(English):
 
     def save_current_translate(self):
         language = common.object_to_dict(self)
-        with open(self._data_path, 'w') as io:
+        with open(self._data_path, 'w', encoding='utf-8') as io:
             json.dump(language, io, ensure_ascii=False, indent=4)
 
     def translate(self, t: Translator):

@@ -1,3 +1,4 @@
+from app.res.const import Const
 from . import Language
 
 
@@ -48,6 +49,10 @@ If you want "hibernation" - slower sleeps, slower wakes, and better battery life
 (Only test on macOS 10.14 successful, 10.13- old version maybe different.)
 
 Current Mode: %s'''
+    description_set_event = '''Input executable program path on here. If this event triggered, will execute this program.
+Event parameter will passing through Environment. (JSON Format, key: %s)
+
+More information can found on GitHub "doc/" folder. (such as examples.)''' % Const.app_env
     description_welcome_why_need_admin = '''You need to input your administrator account to grant privileges for SleeperX. Because SleeperX will change "Power Management Settings". (Disable Lid Sleep)'''
     description_welcome_is_admin = '''Current user is administrator, skiped the admin username setting. (If you want use other admin account work on SleeperX, You can set it later.)'''
     description_welcome_tips_set_account = '''You canceled admin account settings! Disable lid sleep will be invalid. (You can find admin account settings in preferences.)'''
@@ -66,6 +71,11 @@ If admin account is correct, But always can't do this, You can try to export log
     menu_disable_lid_sleep_in_charging = 'Disable Lid Sleep In Charging'
     menu_preferences = 'Preferences'
     menu_advanced_options = 'Advanced Options'
+    menu_event_callback = 'Event Callback'
+    menu_set_lid_status_changed_event = 'Set Lid Status Changed Event'
+    menu_set_charge_status_changed_event = 'Set Charge Status Changed Event'
+    menu_set_idle_status_changed_event = 'Set Idle Status Changed Event'
+    menu_set_sleep_waked_up_event = 'Set Sleep Waked Up Event'
     menu_screen_save_on_lid = 'ScreenSave On Lid (In Disable Lid Sleep)'
     menu_short_time_cancel_screen_save = 'Short Time Cancel ScreenSave (On Lid, 3s Cancel)'
     menu_low_battery_capacity_sleep = 'Low Battery Capacity Sleep (Hackintosh Feature)'
