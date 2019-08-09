@@ -47,6 +47,7 @@ class Application:
         self.lid_stat = None  # type: bool
         self.sleep_idle_time = -1
         self.idle_time = -1
+        self.refresh_time = None
 
     def init_menu(self):
         def g_menu(name, title='', callback=None, parent=self.app.menu):
@@ -333,6 +334,13 @@ class Application:
 
     def callback_refresh(self, sender: rumps.Timer):
         try:
+            refresh_time = time.time()
+            if self.refresh_time is not None:
+                sleep_time = refresh_time - self.refresh_time
+                if sleep_time >= 30:
+                    self.callback_sleep_waked_up(sleep_time)
+            self.refresh_time = refresh_time
+
             e_lid = Config.event_lid_status_changed != ''
             e_idle = Config.event_idle_status_changed != ''
 
@@ -522,6 +530,8 @@ class Application:
         time.sleep(0.5)
         check_ready()
 
+        # fix callback refresh.
+        self.refresh_time = time.time()
         real_sleep_time = time.time() - sleep_begin_time - sleep_ready_time
         common.log(self.sleep, 'Info',
                    'sleep_ready_time: %.2fs, real_sleep_time: %.2fs' % (sleep_ready_time, real_sleep_time))
