@@ -1,5 +1,6 @@
-#!/Users/hsojo/Projects/PycharmProjects/VirtualEnv/bin/python
+#!/usr/local/bin/python3
 import os
+import time
 
 
 def take_photo(path):
@@ -10,19 +11,23 @@ def take_photo(path):
     cap.release()
 
 
+PHOTO_DIR = os.path.expanduser('~/SleeperX')
+time_now = lambda: time.strftime('%Y_%m_%d_%H_%M_%S')
+
+
 def event_idle_status_changed(idle_time: int, **env):
     if idle_time >= 300:
-        take_photo(os.path.expanduser("~/Downloads/idle.png"))
+        take_photo('%s/idle_%s.png' % (PHOTO_DIR, time_now()))
 
 
-def event_sleep_waked_up(sleep_time: int, **env):
-    if sleep_time > 60:
-        os.system('open %s' % os.path.expanduser('~/Automator/RestartBluetooth.app'))
+def event_sleep_waked_up(sleep_time: float, **env):
+    time.sleep(3)
+    take_photo('%s/sleep_%s_%.2f.png' % (PHOTO_DIR, time_now(), sleep_time))
 
 
 def event_lid_status_changed(status: bool, status_prev: bool, **env):
     if status_prev and not status:
-        take_photo(os.path.expanduser("~/Downloads/lid.png"))
+        take_photo('%s/lid_%s.png' % (PHOTO_DIR, time_now()))
 
 
 def event_charge_status_changed(status: str, status_prev: str, **env):

@@ -290,7 +290,8 @@ class Application:
         code = -1
 
         if Config.username != '':
-            code, out, err = osa_api.run_as_admin(command, Config.password, Config.username, timeout=Config.process_timeout)
+            code, out, err = osa_api.run_as_admin(command, Config.password, Config.username,
+                                                  timeout=Config.process_timeout)
         else:
             if self.is_admin:
                 code, out, err = system_api.sudo(command, Config.password, timeout=Config.process_timeout)
@@ -580,7 +581,9 @@ class Application:
             self.check_update(self.menu_check_update, True)
         elif res == ':restart':
             self.restart()
-        elif res == Const.github_page and not welcome:
+        elif res == ':debug':
+            rumps.debug_mode(True)
+        elif res == Const.github_page.lower() and not welcome:
             system_api.open_url(Const.github_page)
 
     def export_log(self):
