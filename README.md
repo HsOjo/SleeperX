@@ -29,12 +29,16 @@ This program can work normally in **macOS 10.14**. (Tested on MacBook Pro early 
 
 ![Thumbnail](doc/img/thumbnail_en.png)
 
+## Downloads
+
+Please view [Releases Page](./releases).
+
 ## How To Build
 
 * Install Requirement.
 
 ```bash
-pip3 install rumps pyinstaller requests pyexecjs zhconv
+pip3 install -r requirements.txt
 ```
 
 * Build

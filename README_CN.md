@@ -29,12 +29,16 @@
 
 ![预览图](doc/img/thumbnail_cn.png)
 
+## 下载
+
+请查看[Releases页面](./releases)。
+
 ## 如何构建
 
 * 安装依赖包
 
 ```bash
-pip3 install rumps pyinstaller requests pyexecjs zhconv
+pip3 install -r requirements.txt
 ```
 
 * 构建
