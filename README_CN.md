@@ -31,7 +31,7 @@
 
 ## 下载
 
-请查看[Releases页面](./releases)。
+请查看[Releases页面](../../releases)。
 
 ## 如何构建
 

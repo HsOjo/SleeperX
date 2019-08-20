@@ -31,7 +31,7 @@ This program can work normally in **macOS 10.14**. (Tested on MacBook Pro early 
 
 ## Downloads
 
-Please view [Releases Page](./releases).
+Please view [Releases Page](../../releases).
 
 ## How To Build
 
