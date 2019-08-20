@@ -8,6 +8,11 @@ class Chinese(English):
     cancel = '取消'
     ok = '确定'
 
+    time_days = '天'
+    time_hours = '小时'
+    time_minutes = '分钟'
+    time_seconds = '秒'
+
     description_about = '''SleeperX 版本 %s
 
 在Hackintosh下实现自动睡眠功能。
@@ -91,10 +96,11 @@ Enjoy yourself!'''
     menu_about = '关于'
     menu_quit = '退出'
 
+    menu_ex_cancel_after_time = '在%s后取消'
+
     view_percent = '剩余电量: %d%%'
     view_status = '充电状态: %s'
     view_remaining = '剩余时间: %s'
-    view_remaining_time = '%d 分钟'
     view_remaining_counting = '(计算中...)'
 
     status_charging = {'not charging': '未在充电', 'discharging': '正在放电', 'charging': '正在充电',

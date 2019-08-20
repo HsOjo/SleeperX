@@ -42,12 +42,21 @@ class Application:
         self.menu_screen_save_on_lid = None  # type: rumps.MenuItem
         self.menu_short_time_cancel_screen_save = None  # type: rumps.MenuItem
 
+        self.menu_cat = []
+
         self.init_menu()
         self.battery_status = None  # type: dict
         self.lid_stat = None  # type: bool
+
+        # System sleep time. (from pmset)
         self.sleep_idle_time = -1
+        # System idle time.
         self.idle_time = -1
+        # Refresh last time. (check sleep by twice refresh)
         self.refresh_time = None
+
+        self.cancel_disable_idle_sleep_time = None
+        self.cancel_disable_lid_sleep_time = None
 
     def init_menu(self):
         def g_menu(name, title='', callback=None, parent=self.app.menu):
@@ -122,15 +131,47 @@ class Application:
         g_menu('display_sleep_now', callback=lambda _: system_api.sleep(display_only=True))
 
         g_menu('-')
+
+        def g_cancel_after_time_menus(time_options: list, name, g_callback, parent):
+            for to in time_options:
+                if to == '-':
+                    g_menu('-', parent=parent)
+                else:
+                    menu_name = '%s_cat_%d' % (name, to)
+                    g_menu(menu_name, callback=g_callback(to), parent=parent)
+                    self.menu_cat.append({'name': menu_name, 'time': to})
+
+        # menu_disable_idle_sleep
         self.menu_disable_idle_sleep = g_menu('disable_idle_sleep',
                                               callback=lambda sender: self.set_idle_sleep(sender.state))
 
+        def g_cat_callback_idle(t):
+            def callback(_):
+                self.cancel_disable_idle_sleep_time = time.time() + t
+                self.set_idle_sleep(False)
+
+            return callback
+
+        g_cancel_after_time_menus(
+            Const.time_options, 'idle', g_callback=g_cat_callback_idle, parent=self.menu_disable_idle_sleep)
+
+        # menu_disable_lid_sleep
         def disable_lid_sleep(sender: rumps.MenuItem):
             if not self.set_lid_sleep(sender.state):
                 self.message_box(sender.title, self.lang.unable_to_pmset)
 
         self.menu_disable_lid_sleep = g_menu('disable_lid_sleep',
                                              callback=disable_lid_sleep)
+
+        def g_cat_callback_lid(t):
+            def callback(_):
+                self.cancel_disable_lid_sleep_time = time.time() + t
+                self.set_lid_sleep(False)
+
+            return callback
+
+        g_cancel_after_time_menus(
+            Const.time_options, 'lid', g_callback=g_cat_callback_lid, parent=self.menu_disable_lid_sleep)
 
         g_menu('-')
         self.menu_preferences = g_menu('preferences', self.lang.menu_preferences)
@@ -202,7 +243,9 @@ class Application:
             """
             return lambda _: self.set_language(lang)
 
-        for k in LANGUAGES:
+        for i, k in enumerate(LANGUAGES):
+            if i > 0:
+                g_menu('-', parent=self.menu_select_language)
             g_menu(k, LANGUAGES[k].l_this, g_set_lang(k),
                    parent=self.menu_select_language)
         # menu_select_language end
@@ -286,6 +329,11 @@ class Application:
                 title = getattr(self.lang, 'menu_%s' % k)
                 v['object'].title = title
 
+        for i in self.menu_cat:
+            item = self.menu[i['name']]  # type: dict
+            menu = item['object']  # type: rumps.MenuItem
+            menu.title = self.lang.menu_ex_cancel_after_time % (self.time_convert(i['time']))
+
     def admin_exec(self, command):
         code = -1
 
@@ -305,7 +353,7 @@ class Application:
     def set_menu_title(self, name, title):
         self.app.menu[name].title = title
 
-    def refresh_view(self):
+    def refresh_battery_status_view(self):
         self.set_menu_title(
             'view_percent', self.lang.view_percent % self.battery_status['percent'])
 
@@ -315,7 +363,7 @@ class Application:
 
         self.set_menu_title(
             'view_remaining', self.lang.view_remaining % (
-                (self.lang.view_remaining_time % self.battery_status['remaining'])
+                self.time_convert(self.battery_status['remaining'] * 60).lower()
                 if self.battery_status['remaining'] is not None else self.lang.view_remaining_counting))
 
     def refresh_sleep_idle_time(self):
@@ -335,12 +383,35 @@ class Application:
 
     def callback_refresh(self, sender: rumps.Timer):
         try:
+            # check long time no refresh sleep.
             refresh_time = time.time()
             if self.refresh_time is not None:
                 sleep_time = refresh_time - self.refresh_time
-                if sleep_time >= 30:
-                    self.callback_sleep_waked_up(sleep_time)
+                if sleep_time >= Const.check_sleep_time:
+                    idle_time = system_api.get_hid_idle_time()
+                    if idle_time >= Const.check_sleep_time:
+                        self.callback_sleep_waked_up(sleep_time)
             self.refresh_time = refresh_time
+
+            # cancel after time refresh.
+            if self.cancel_disable_idle_sleep_time is not None:
+                time_remain = self.cancel_disable_idle_sleep_time - time.time()
+                if time_remain <= 0:
+                    self.set_idle_sleep(True)
+                else:
+                    self.menu_disable_idle_sleep.title = '%s - %s' % (
+                        self.lang.menu_disable_idle_sleep, self.lang.menu_ex_cancel_after_time % (
+                            self.time_convert(time_remain)
+                        ))
+            if self.cancel_disable_lid_sleep_time is not None:
+                time_remain = self.cancel_disable_lid_sleep_time - time.time()
+                if time_remain <= 0:
+                    self.set_lid_sleep(True)
+                else:
+                    self.menu_disable_lid_sleep.title = '%s - %s' % (
+                        self.lang.menu_disable_lid_sleep, self.lang.menu_ex_cancel_after_time % (
+                            self.time_convert(time_remain)
+                        ))
 
             e_lid = Config.event_lid_status_changed != ''
             e_idle = Config.event_idle_status_changed != ''
@@ -376,7 +447,7 @@ class Application:
                         self.callback_charge_status_changed(
                             self.battery_status['status'], battery_status_prev['status'])
 
-                self.refresh_view()
+                self.refresh_battery_status_view()
 
                 # low battery capacity sleep check
                 if Config.low_battery_capacity_sleep:
@@ -552,6 +623,8 @@ class Application:
         self.menu_disable_lid_sleep.state = not available
         if available:
             success = system_api.set_sleep_available(True, self.admin_exec)
+            self.cancel_disable_lid_sleep_time = None
+            self.menu_disable_lid_sleep.title = self.lang.menu_disable_lid_sleep
         else:
             success = system_api.set_sleep_available(False, self.admin_exec)
 
@@ -565,8 +638,32 @@ class Application:
         self.menu_disable_idle_sleep.state = not available
         if available:
             self.pd_noidle.stop()
+            self.cancel_disable_idle_sleep_time = None
+            self.menu_disable_idle_sleep.title = self.lang.menu_disable_idle_sleep
         else:
             self.pd_noidle.start()
+
+    def time_convert(self, time: int) -> str:
+        time = int(time)
+        day = time // 86400
+        time %= 86400
+        hour = time // 3600
+        time %= 3600
+        minute = time // 60
+        time %= 60
+        second = time
+
+        result = ''
+        if day > 0:
+            result += '%d%s' % (day, self.lang.time_days)
+        if hour > 0:
+            result += '%d%s' % (hour, self.lang.time_hours)
+        if minute > 0:
+            result += '%d%s' % (minute, self.lang.time_minutes)
+        if second > 0 or result == '':
+            result += '%d%s' % (second, self.lang.time_seconds)
+
+        return result
 
     def about(self, welcome=False):
         res = osa_api.dialog_input(self.lang.menu_about if not welcome else self.lang.title_welcome,

@@ -19,6 +19,8 @@ And it can disable idle sleep or lid sleep!
   * Charge Status Change
   * Sleep Waked Up
 
+* Support cancel disable sleep after any times.
+
 Base on above contents, You can free to extend this program.
 
 Example: Take photo on open lid. (example code on folder "/doc/".)

@@ -8,6 +8,11 @@ class English(Language):
     cancel = 'Cancel'
     ok = 'OK'
 
+    time_days = ' Days '
+    time_hours = ' Hours '
+    time_minutes = ' Minutes '
+    time_seconds = ' Seconds'
+
     description_about = '''SleeperX Version %s
 
 Auto sleep for hackintosh. 
@@ -77,7 +82,7 @@ If admin account is correct, But always can't do this, You can try to export log
     menu_set_charge_status_changed_event = 'Set Charge Status Changed Event'
     menu_set_sleep_waked_up_event = 'Set Sleep Waked Up Event'
     menu_screen_save_on_lid = 'ScreenSave On Lid (In Disable Lid Sleep)'
-    menu_short_time_cancel_screen_save = 'Short Time Cancel ScreenSave (On Lid, 3s Cancel)'
+    menu_short_time_cancel_screen_save = 'Short Time Cancel ScreenSave (On Lid, 3 seconds Cancel)'
     menu_low_battery_capacity_sleep = 'Low Battery Capacity Sleep (Hackintosh Feature)'
     menu_set_low_battery_capacity = 'Set Low Battery Capacity'
     menu_set_low_time_remaining = 'Set Low Time Remaining'
@@ -92,10 +97,11 @@ If admin account is correct, But always can't do this, You can try to export log
     menu_about = 'About'
     menu_quit = 'Quit'
 
+    menu_ex_cancel_after_time = 'Cancel After %s'
+
     view_percent = 'Battery Capacity: %d%%'
     view_status = 'Status: %s'
     view_remaining = 'Remaining: %s'
-    view_remaining_time = '%d minutes'
     view_remaining_counting = '(counting...)'
 
     status_charging = {'not charging': 'not charging', 'discharging': 'discharging', 'charging': 'charging',
