@@ -4,14 +4,14 @@ from threading import Thread
 import rumps
 
 from app import common
-from app.view.application import ApplicationView
 from .base.application import ApplicationBase
 from .config import Config
-from .process_daemon import ProcessDaemon
 from .res.const import Const
 from .res.language import load_language, LANGUAGES
 from .res.language.english import English
 from .util import system_api, osa_api, github
+from .util.process_daemon import ProcessDaemon
+from .view.application import ApplicationView
 
 
 class Application(ApplicationBase, ApplicationView):
