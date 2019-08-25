@@ -16,6 +16,7 @@ def execute(cmd, input=None, timeout=None, **kwargs):
     p = popen(cmd, **kwargs)
     if input is not None:
         p.stdin.write(input)
+        p.stdin.close()
     out = p.stdout.read()
     err = p.stderr.read()
     stat = p.wait(timeout)

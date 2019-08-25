@@ -7,7 +7,7 @@ from app import common
 from app.res.const import Const
 from app.res.language import LANGUAGES, load_language
 from app.res.language.english import English
-from app.util import system_api, osa_api, pyinstaller, log, github
+from app.util import system_api, osa_api, pyinstaller, log, github, object_convert
 
 
 class ApplicationBase:
@@ -285,3 +285,18 @@ class ApplicationBase:
             self.config.clear()
             if osa_api.alert(sender.title, self.lang.description_clear_config_restart):
                 self.restart()
+
+    def event_trigger(self, source, params: dict, path_event: str):
+        if path_event != '':
+            params_pop = []
+            for k, v in params.items():
+                if type(v) not in [None.__class__, bool, int, float, str, list, dict]:
+                    params_pop.append(k)
+            for k in params_pop:
+                params.pop(k)
+
+            [stat, out, err] = common.execute(
+                path_event, env={Const.app_env: object_convert.to_json(params)}, sys_env=False,
+                timeout=self.config.process_timeout)
+            log.append(source, 'Event',
+                       {'path': path_event, 'status': stat, 'output': out, 'error': err})

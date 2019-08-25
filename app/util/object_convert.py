@@ -6,7 +6,10 @@ def to_json(obj):
 
 
 def from_json(obj_str):
-    return json.loads(obj_str)
+    try:
+        return json.loads(obj_str)
+    except:
+        return None
 
 
 def object_to_dict(obj):
