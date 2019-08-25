@@ -22,7 +22,6 @@ class Application(ApplicationBase, ApplicationView):
         self.menu_cat = []
         self.init_menu()
 
-        self.is_admin = system_api.check_admin()
         self.pd_noidle = ProcessDaemon('/usr/bin/pmset noidle')
 
         self.battery_status = None  # type: dict
@@ -139,8 +138,8 @@ class Application(ApplicationBase, ApplicationView):
         self.menu_set_charge_status_changed_event.state = self.config.event_charge_status_changed != ''
         self.menu_set_sleep_waked_up_event.state = self.config.event_sleep_waked_up != ''
 
-    def refresh_menu_title(self):
-        super().refresh_menu_title()
+    def inject_menu_title(self):
+        super().inject_menu_title()
 
         for i in self.menu_cat:
             item = self.menu[i['name']]  # type: dict
@@ -159,24 +158,8 @@ class Application(ApplicationBase, ApplicationView):
             Const.time_options, 'lid', self.generate_callback_cat_lid, self.menu_disable_lid_sleep)
 
         self.bind_menu_callback()
-        self.refresh_menu_title()
+        self.inject_menu_title()
         self.inject_menu_value()
-
-    def admin_exec(self, command):
-        code = -1
-
-        if self.config.username != '':
-            code, out, err = osa_api.run_as_admin(command, self.config.password, self.config.username,
-                                                  timeout=self.config.process_timeout)
-        else:
-            if self.is_admin:
-                code, out, err = system_api.sudo(command, self.config.password, timeout=self.config.process_timeout)
-                log.append(self.admin_exec, 'Info', {'command': command, 'status': code, 'output': out, 'error': err})
-
-        if code != 0:
-            return False
-
-        return True
 
     def refresh_battery_status_view(self):
         self.set_menu_title(
@@ -452,24 +435,6 @@ class Application(ApplicationBase, ApplicationView):
 
         return result
 
-    def about(self, welcome=False):
-        res = osa_api.dialog_input(self.lang.menu_about if not welcome else self.lang.title_welcome,
-                                   self.lang.description_about % Const.version, Const.github_page)
-
-        if isinstance(res, str):
-            res = res.strip().lower()
-
-        if res == ':export log':
-            self.export_log()
-        elif res == ':check update':
-            self.check_update(self.menu_check_update, True)
-        elif res == ':restart':
-            self.restart()
-        elif res == ':debug':
-            rumps.debug_mode(True)
-        elif res == Const.github_page.lower() and not welcome:
-            system_api.open_url(Const.github_page)
-
     def quit(self):
         self.pd_noidle.stop()
         [info, _] = system_api.sleep_info()
@@ -477,31 +442,6 @@ class Application(ApplicationBase, ApplicationView):
             system_api.set_sleep_available(True, self.admin_exec)
 
         super().quit()
-
-    def check_update(self, sender, test=False):
-        try:
-            release = github.get_latest_release(Const.author, Const.app_name, timeout=5)
-            log.append(self.check_update, 'Info', release)
-
-            if test or common.compare_version(Const.version, release['tag_name']):
-                rumps.notification(
-                    self.lang.noti_update_version % release['name'],
-                    self.lang.noti_update_time % release['published_at'],
-                    release['body'],
-                )
-
-                if sender == self.menu_check_update:
-                    if len(release['assets']) > 0:
-                        system_api.open_url(release['assets'][0]['browser_download_url'])
-                    else:
-                        system_api.open_url(release['html_url'])
-            else:
-                if sender == self.menu_check_update:
-                    rumps.notification(sender.title, self.lang.noti_update_none, self.lang.noti_update_star)
-        except:
-            log.append(self.check_update, 'Warning', common.get_exception())
-            if sender == self.menu_check_update:
-                rumps.notification(sender.title, '', self.lang.noti_network_error)
 
     def welcome(self):
         self.about(True)
@@ -530,8 +470,7 @@ class Application(ApplicationBase, ApplicationView):
 
         self.message_box(self.lang.title_welcome, self.lang.description_welcome_end)
 
-        self.config.welcome = False
-        self.config.save()
+        super().welcome()
 
     def run(self):
         if self.config.welcome:
@@ -541,9 +480,3 @@ class Application(ApplicationBase, ApplicationView):
         t_refresh.start()
 
         super().run()
-
-    def clear_config(self, sender: rumps.MenuItem):
-        if osa_api.alert(sender.title, self.lang.description_clear_config):
-            self.config.clear()
-            if osa_api.alert(sender.title, self.lang.description_clear_config_restart):
-                self.restart()

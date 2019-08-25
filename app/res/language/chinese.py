@@ -13,7 +13,7 @@ class Chinese(English):
     time_minutes = '分钟'
     time_seconds = '秒'
 
-    description_about = '''SleeperX 版本 %s
+    description_about = '''%s 版本 %s
 
 在Hackintosh下实现自动睡眠功能。
 可以有效防止电池电量不足，导致直接断电关机。
@@ -21,8 +21,8 @@ class Chinese(English):
 在接通电源时，可以自动禁止睡眠。
 并且可以随意关闭闲置睡眠或合盖睡眠。
 
-由HsOjo开发。
-以下是GitHub页面链接。'''
+由%s开发。
+以下是GitHub页面链接。''' % (Const.app_name, Const.version, Const.author)
     description_set_password = '''设置管理员用户密码。
 将用于执行更改“电源管理设置”。（阻止合盖睡眠）'''
     description_set_username = '''设置管理员用户名。（这里的用户名不是全名！您可以在“terminal.app”上查看，登录您的管理用户，并在终端上输入"whoami"。）
@@ -34,7 +34,7 @@ class Chinese(English):
     description_set_low_battery_capacity = '''设置低电量临界值。 (单位: 百分比)
 当电量百分比不足该值，将执行睡眠命令。
 (只在非充电状态有效。)'''
-    description_crash = '''卧槽! SleeperX崩溃了!
+    description_crash = '''卧槽! 应用崩溃了!
 接下来将导出日志，请将日志提交给开发者，谢谢配合。'''
     description_set_startup = '''你确定要将该应用添加到登录启动项吗？
 (你可以在 `系统偏好设置` - `用户与群组` - `登录项`取消。)'''

@@ -7,7 +7,7 @@ from app import common
 from app.res.const import Const
 from app.res.language import LANGUAGES, load_language
 from app.res.language.english import English
-from app.util import system_api, osa_api, pyinstaller, log
+from app.util import system_api, osa_api, pyinstaller, log, github
 
 
 class ApplicationBase:
@@ -21,6 +21,25 @@ class ApplicationBase:
         self.lang = load_language(self.config.language)  # type: English
 
         self.menu = {}
+        self.menu_check_update = None  # type: rumps.MenuItem
+
+        self.is_admin = system_api.check_admin()
+
+    def admin_exec(self, command):
+        code = -1
+
+        if self.config.username != '':
+            code, out, err = osa_api.run_as_admin(command, self.config.password, self.config.username,
+                                                  timeout=self.config.process_timeout)
+        else:
+            if self.is_admin:
+                code, out, err = system_api.sudo(command, self.config.password, timeout=self.config.process_timeout)
+                log.append(self.admin_exec, 'Info', {'command': command, 'status': code, 'output': out, 'error': err})
+
+        if code != 0:
+            return False
+
+        return True
 
     def add_menu(self, name, title='', callback=None, parent=None):
         if parent is None:
@@ -36,7 +55,7 @@ class ApplicationBase:
                 menu = rumps.MenuItem(name)
                 parent.add(menu)
 
-            menu.title = title
+            menu.title = title if title != '' else str(name)
 
             item = {'object': menu, 'name': name, 'callback': None, 'parent': parent}
             self.menu[name] = item
@@ -115,9 +134,9 @@ class ApplicationBase:
                 self.add_menu('-', parent=parent)
             self.add_menu(k, LANGUAGES[k].l_this, g_set_lang(k), parent=parent)
 
-    def refresh_menu_title(self):
+    def inject_menu_title(self):
         for k, v in self.menu.items():
-            if 'menu_%s' % k in dir(self.lang):
+            if isinstance(k, str) and 'menu_%s' % k in dir(self.lang):
                 title = getattr(self.lang, 'menu_%s' % k)
                 v['object'].title = title
 
@@ -183,7 +202,7 @@ class ApplicationBase:
 
     def set_language(self, language):
         self.lang = LANGUAGES[language]()
-        self.refresh_menu_title()
+        self.inject_menu_title()
         self.config.language = language
         self.config.save()
 
@@ -207,7 +226,62 @@ class ApplicationBase:
 
         return False
 
+    def check_update(self, sender, test=False):
+        try:
+            release = github.get_latest_release(Const.author, Const.app_name, timeout=5)
+            log.append(self.check_update, 'Info', release)
+
+            if test or common.compare_version(Const.version, release['tag_name']):
+                rumps.notification(
+                    self.lang.noti_update_version % release['name'],
+                    self.lang.noti_update_time % release['published_at'],
+                    release['body'],
+                )
+
+                if sender == self.menu_check_update:
+                    if len(release['assets']) > 0:
+                        system_api.open_url(release['assets'][0]['browser_download_url'])
+                    else:
+                        system_api.open_url(release['html_url'])
+            else:
+                if sender == self.menu_check_update:
+                    rumps.notification(sender.title, self.lang.noti_update_none, self.lang.noti_update_star)
+        except:
+            log.append(self.check_update, 'Warning', common.get_exception())
+            if sender == self.menu_check_update:
+                rumps.notification(sender.title, '', self.lang.noti_network_error)
+
+    def about(self, welcome=False):
+        res = osa_api.dialog_input(self.lang.menu_about if not welcome else self.lang.title_welcome,
+                                   self.lang.description_about, Const.github_page)
+
+        if isinstance(res, str):
+            res = res.strip().lower()
+
+        if res == ':export log':
+            self.export_log()
+        elif res == ':check update':
+            self.check_update(self.menu_check_update, True)
+        elif res == ':restart':
+            self.restart()
+        elif res == ':debug':
+            rumps.debug_mode(True)
+        elif res == Const.github_page.lower() and not welcome:
+            system_api.open_url(Const.github_page)
+        else:
+            return res
+
+    def welcome(self):
+        self.config.welcome = False
+        self.config.save()
+
     def set_startup(self):
         res = osa_api.alert(self.lang.menu_set_startup, self.lang.description_set_startup)
         if res:
             osa_api.set_login_startup(*pyinstaller.get_application_info())
+
+    def clear_config(self, sender: rumps.MenuItem):
+        if osa_api.alert(sender.title, self.lang.description_clear_config):
+            self.config.clear()
+            if osa_api.alert(sender.title, self.lang.description_clear_config_restart):
+                self.restart()

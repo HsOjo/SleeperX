@@ -13,7 +13,7 @@ class English(Language):
     time_minutes = ' Minutes '
     time_seconds = ' Seconds'
 
-    description_about = '''SleeperX Version %s
+    description_about = '''%s Version %s
 
 Auto sleep for hackintosh. 
 Protect low battery capacity force shutdown.
@@ -21,8 +21,8 @@ Protect low battery capacity force shutdown.
 Auto disable sleep on use AC power.
 And it can disable idle sleep or lid sleep!
 
-Develop by HsOjo.
-Below is the link with the project GitHub page.'''
+Develop by %s.
+Below is the link with the project GitHub page.''' % (Const.app_name, Const.version, Const.author)
     description_set_password = '''Set the administrator user password.
 It will use for execute change "Power Management Settings". (Disable Lid Sleep)'''
     description_set_username = '''Set the administrator username. (This username isn't full name! You can query it on "Terminal.app", login your admin user and input "whoami" on terminal.)
@@ -35,7 +35,7 @@ It will execute sleep command on this value and lower.
 It will execute sleep command on this value and lower.
 (Just on status discharging valid.)'''
     description_select_language = 'Select your language.'
-    description_crash = '''Oops! Application(SleeperX) Crash!
+    description_crash = '''Oops! Application Crash!
 Will export log later. Send the log file to Developer, please.'''
     description_set_startup = '''Do you want to set startup this app on login?
 (You can cancel it on `System Preferences` - `User or Group account` - `Login items`)'''
