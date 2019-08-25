@@ -200,3 +200,17 @@ def site_package_path():
     else:
         sp_path = None
     return sp_path
+
+
+def runtime_path():
+    paths = []
+    for x in sys.path:
+        path = '%s/../../bin/python' % x
+        if 'python' in x and os.path.isdir(x) and os.path.exists(path):
+            path = os.path.abspath(path)
+            paths.append(path)
+
+    if len(paths) > 0:
+        return paths[0]
+
+    return None
