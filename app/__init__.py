@@ -9,7 +9,7 @@ from .config import Config
 from .res.const import Const
 from .res.language import load_language, LANGUAGES
 from .res.language.english import English
-from .util import system_api, osa_api, github
+from .util import system_api, osa_api, github, object_convert, log
 from .util.process_daemon import ProcessDaemon
 from .view.application import ApplicationView
 
@@ -171,7 +171,7 @@ class Application(ApplicationBase, ApplicationView):
         else:
             if self.is_admin:
                 code, out, err = system_api.sudo(command, self.config.password, timeout=self.config.process_timeout)
-                common.log(self.admin_exec, 'Info', {'command': command, 'status': code, 'output': out, 'error': err})
+                log.append(self.admin_exec, 'Info', {'command': command, 'status': code, 'output': out, 'error': err})
 
         if code != 0:
             return False
@@ -188,7 +188,7 @@ class Application(ApplicationBase, ApplicationView):
 
         self.set_menu_title(
             'view_remaining', self.lang.view_remaining % (
-                self.time_convert(self.battery_status['remaining'] * 60).lower()
+                self.time_convert(self.battery_status['remaining']).lower()
                 if self.battery_status['remaining'] is not None else self.lang.view_remaining_counting))
 
     def refresh_sleep_idle_time(self):
@@ -272,7 +272,7 @@ class Application(ApplicationBase, ApplicationView):
                         low_battery_capacity = self.battery_status['percent'] <= self.config.low_battery_capacity
 
                         low_time_remaining = self.battery_status['remaining'] is not None \
-                                             and self.battery_status['remaining'] <= self.config.low_time_remaining
+                                             and self.battery_status['remaining'] <= self.config.low_time_remaining * 60
 
                         if low_battery_capacity or low_time_remaining:
                             self.sleep()
@@ -290,9 +290,9 @@ class Application(ApplicationBase, ApplicationView):
                 params.pop(k)
 
             [stat, out, err] = common.execute(
-                path_event, env={Const.app_env: common.to_json(params)}, sys_env=False,
+                path_event, env={Const.app_env: object_convert.to_json(params)}, sys_env=False,
                 timeout=self.config.process_timeout)
-            common.log(source, 'Event',
+            log.append(source, 'Event',
                        {'path': path_event, 'status': stat, 'output': out, 'error': err})
 
     def callback_idle_status_changed(self, idle_time: float):
@@ -308,7 +308,7 @@ class Application(ApplicationBase, ApplicationView):
     def callback_lid_status_changed(self, status: bool, status_prev: bool = None):
         params = locals()
 
-        common.log(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
+        log.append(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         if status:
             if self.config.screen_save_on_lid:
                 if self.config.short_time_cancel_screen_save:
@@ -320,7 +320,7 @@ class Application(ApplicationBase, ApplicationView):
                     if valid:
                         osa_api.screen_save()
                     else:
-                        common.log('check_lock', 'Info', 'user cancel lock screen.')
+                        log.append('check_lock', 'Info', 'user cancel lock screen.')
                 else:
                     osa_api.screen_save()
 
@@ -329,7 +329,7 @@ class Application(ApplicationBase, ApplicationView):
     def callback_charge_status_changed(self, status: str, status_prev: str = None):
         params = locals()
 
-        common.log(self.callback_charge_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
+        log.append(self.callback_charge_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         self.refresh_sleep_idle_time()
         if status == 'discharging':
             if self.config.disable_idle_sleep_in_charging:
@@ -392,7 +392,7 @@ class Application(ApplicationBase, ApplicationView):
         # fix callback refresh.
         self.refresh_time = time.time()
         real_sleep_time = time.time() - sleep_begin_time - sleep_ready_time
-        common.log(self.sleep, 'Info',
+        log.append(self.sleep, 'Info',
                    'sleep_ready_time: %.2fs, real_sleep_time: %.2fs' % (sleep_ready_time, real_sleep_time))
 
         if fix_idle_sleep:
@@ -481,7 +481,7 @@ class Application(ApplicationBase, ApplicationView):
     def check_update(self, sender, test=False):
         try:
             release = github.get_latest_release(Const.author, Const.app_name, timeout=5)
-            common.log(self.check_update, 'Info', release)
+            log.append(self.check_update, 'Info', release)
 
             if test or common.compare_version(Const.version, release['tag_name']):
                 rumps.notification(
@@ -499,7 +499,7 @@ class Application(ApplicationBase, ApplicationView):
                 if sender == self.menu_check_update:
                     rumps.notification(sender.title, self.lang.noti_update_none, self.lang.noti_update_star)
         except:
-            common.log(self.check_update, 'Warning', common.get_exception())
+            log.append(self.check_update, 'Warning', common.get_exception())
             if sender == self.menu_check_update:
                 rumps.notification(sender.title, '', self.lang.noti_network_error)
 

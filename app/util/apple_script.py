@@ -1,4 +1,5 @@
 from app import common
+from app.util import log
 
 
 class ObjectConvertor:
@@ -58,6 +59,6 @@ class AppleScript:
         except:
             err = common.get_exception()
 
-        common.log(AppleScript.exec, 'AppleScript', {'code': code, 'status': stat, 'output': out, 'error': err})
+        log.append(AppleScript.exec, 'AppleScript', {'code': code, 'status': stat, 'output': out, 'error': err})
 
         return stat, out, err

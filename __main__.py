@@ -3,10 +3,11 @@ import sys
 
 from app import Application, common
 from app.res.const import Const
-
 # is run at pyinstaller
+from app.util import log, pyinstaller
+
 if getattr(sys, 'frozen', False):
-    common.fix_encoding_in_pyinstaller()
+    pyinstaller.fix_encoding_in_pyinstaller()
 
     log_dir = os.path.expanduser('~/Library/Logs/')
 
@@ -17,8 +18,8 @@ if getattr(sys, 'frozen', False):
     common.io_err = open(path_err, 'w+')
 
     # redirect stdout and stderr.
-    sys.stdout = common.io_log
-    sys.stderr = common.io_err
+    sys.stdout = log.io_log
+    sys.stderr = log.io_err
 
 app = Application()
 

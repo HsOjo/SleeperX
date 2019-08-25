@@ -2,9 +2,14 @@ import os
 import re
 
 from app import common
+from app.util import log
 
 
 def battery_status():
+    def convert_second(t):
+        h, m = list(map(int, t.split(':')))
+        return (h * 60 + m) * 60
+
     try:
         content = common.execute_get_out('/usr/bin/pmset -g ps')
 
@@ -12,7 +17,7 @@ def battery_status():
         [res] = reg.findall(content.replace('AC attached; not charging', 'not charging; (no estimate)'))
 
         remaining = res[2].replace(' remaining', '')
-        remaining = common.convert_minute(remaining) if remaining != '(no estimate)' else None
+        remaining = convert_second(remaining) if remaining != '(no estimate)' else None
 
         info = {
             'percent': int(res[0][:-1]),
@@ -22,7 +27,7 @@ def battery_status():
 
         return info
     except:
-        common.log(battery_status, 'Warning', common.get_exception())
+        log.append(battery_status, 'Warning', common.get_exception())
         return None
 
 

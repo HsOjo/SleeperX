@@ -7,12 +7,12 @@ from app import common
 from app.res.const import Const
 from app.res.language import LANGUAGES, load_language
 from app.res.language.english import English
-from app.util import system_api, osa_api
+from app.util import system_api, osa_api, pyinstaller, log
 
 
 class ApplicationBase:
     def __init__(self, config_class):
-        common.log('app_init', 'Info', 'version: %s' % Const.version, system_api.get_system_version())
+        log.append('app_init', 'Info', 'version: %s' % Const.version, system_api.get_system_version())
         self.app = rumps.App(Const.app_name, quit_button=None)
 
         self.config = config_class()
@@ -123,7 +123,7 @@ class ApplicationBase:
 
     def callback_menu(self, name):
         try:
-            common.log(self.callback_menu, 'Info', 'Click %s.' % name)
+            log.append(self.callback_menu, 'Info', 'Click %s.' % name)
             menu = self.menu[name]
             menu['callback'](menu['object'])
         except:
@@ -131,7 +131,7 @@ class ApplicationBase:
 
     def callback_exception(self):
         exc = common.get_exception()
-        common.log(self.callback_exception, 'Error', exc)
+        log.append(self.callback_exception, 'Error', exc)
         if osa_api.alert(self.lang.title_crash, self.lang.description_crash):
             self.export_log()
 
@@ -139,14 +139,14 @@ class ApplicationBase:
         return osa_api.dialog_select(title, description, [self.lang.ok])
 
     def run(self):
-        self.app.icon = '%s/app/res/icon.png' % common.get_runtime_dir()
+        self.app.icon = '%s/app/res/icon.png' % pyinstaller.get_runtime_dir()
         self.app.run()
 
     def quit(self):
         rumps.quit_application()
 
     def restart(self):
-        [_, path] = common.get_application_info()
+        [_, path] = pyinstaller.get_application_info()
         if path is not None:
             self.quit()
             system_api.open_url(path, True)
@@ -155,7 +155,7 @@ class ApplicationBase:
             self.app.title = '\x00'
             self.app.icon = None
 
-            path = common.runtime_path()
+            path = common.python_path()
             if path is not None:
                 os.system('%s %s' % (path, ' '.join(sys.argv)))
 
@@ -164,22 +164,22 @@ class ApplicationBase:
     def export_log(self):
         folder = osa_api.choose_folder(self.lang.menu_export_log)
         if folder is not None:
-            log = common.extract_log()
-            err = common.extract_err()
+            log_str = log.extract_log()
+            err_str = log.extract_err()
 
             for f in self.config._protect_fields:
                 v = getattr(self.config, f, '')
                 if v != '':
-                    log = log.replace(v, Const.protector)
-                    err = err.replace(v, Const.protector)
+                    log_str = log_str.replace(v, Const.protector)
+                    err_str = err_str.replace(v, Const.protector)
 
-            if log != '':
-                with open('%s/%s' % (folder, '%s.log' % Const.app_name), 'w') as io:
-                    io.write(log)
+            if log_str != '':
+                with open('%s/%s' % (folder, '%s.append' % Const.app_name), 'w') as io:
+                    io.write(log_str)
 
-            if err != '':
+            if err_str != '':
                 with open('%s/%s' % (folder, '%s.err' % Const.app_name), 'w') as io:
-                    io.write(err)
+                    io.write(err_str)
 
     def set_language(self, language):
         self.lang = LANGUAGES[language]()
@@ -210,4 +210,4 @@ class ApplicationBase:
     def set_startup(self):
         res = osa_api.alert(self.lang.menu_set_startup, self.lang.description_set_startup)
         if res:
-            osa_api.set_login_startup(*common.get_application_info())
+            osa_api.set_login_startup(*pyinstaller.get_application_info())

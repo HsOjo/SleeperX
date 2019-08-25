@@ -5,6 +5,7 @@ from zipfile import ZipFile
 from app.res.const import Const
 from app.res.language import load_language, LANGUAGES
 from app.res.language.translate_language import TranslateLanguage
+from app.util import log
 from tools.translate import *
 
 datas = {}
@@ -15,7 +16,7 @@ def add_data(src, dest):
 
 
 # build translate language data.
-common.log('Build', 'Info', 'Building translate data now...')
+log.append('Build', 'Info', 'Building translate data now...')
 load_language()
 for lang_type in LANGUAGES.values():
     if issubclass(lang_type, TranslateLanguage):
@@ -27,7 +28,7 @@ for lang_type in LANGUAGES.values():
                 translator = baidu_translate()
             else:
                 translator = google_translate()
-            common.log('Build', 'Translate', 'Using %s' % translator.__class__.__name__)
+            log.append('Build', 'Translate', 'Using %s' % translator.__class__.__name__)
 
             lang.translate(translator)
             lang.save_current_translate()
@@ -44,7 +45,7 @@ for k, v in datas.items():
     data_str += ' \\\n\t'
     data_str += '--add-data "%s:%s"' % (k, v)
 
-common.log('Build', 'Info', 'Pyinstaller packing now...')
+log.append('Build', 'Info', 'Pyinstaller packing now...')
 pyi_cmd = 'pyinstaller -F -w -n "%s" -i "./app/res/icon.icns" %s \\\n__main__.py' % (Const.app_name, data_str)
 print(pyi_cmd)
 os.system(pyi_cmd)
@@ -62,7 +63,7 @@ info = info[:dict_pos] + '\t<key>LSUIElement</key>\n\t<string>1</string>\n' + in
 with open(INFO_FILE, 'w') as io:
     io.write(info)
 
-common.log('Build', 'Info', 'Packing release zip file now...')
+log.append('Build', 'Info', 'Packing release zip file now...')
 
 # pack release zip file.
 zf = ZipFile('./dist/%s-%s.zip' % (Const.app_name, Const.version), 'w')
@@ -74,4 +75,4 @@ for d, ds, fs in os.walk(src_dir):
         zf.write(path, z_path)
 zf.close()
 
-common.log('Build', 'Info', 'Build finish.')
+log.append('Build', 'Info', 'Build finish.')
