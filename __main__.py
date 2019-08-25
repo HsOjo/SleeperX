@@ -3,10 +3,10 @@ import sys
 
 from app import Application, common
 from app.res.const import Const
-# is run at pyinstaller
 from app.util import log, pyinstaller
 
 if getattr(sys, 'frozen', False):
+    # is run at pyinstaller
     pyinstaller.fix_encoding_in_pyinstaller()
 
     log_dir = os.path.expanduser('~/Library/Logs/')
