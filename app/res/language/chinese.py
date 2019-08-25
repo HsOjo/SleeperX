@@ -62,10 +62,12 @@ class Chinese(English):
     description_welcome_tips_set_account = '''您取消了管理帐户设置！禁用合盖睡眠将无法使用。（您可以在偏好设置中找到管理帐户设置。）'''
     description_welcome_end = '''很好！现在SleeperX可以开始工作了。
 Enjoy yourself!'''
-    unable_to_pmset = '''无法更改“电源管理设置”！
+    description_unable_to_pmset = '''无法更改“电源管理设置”！
 请检查您的管理员帐户（用户名和密码）是否正确。
 
 如果管理帐户是正确的，但始终无法使用，您可以尝试导出日志（在“偏好设置”-“高级选项”），并发送到这个项目的 issues 页面。'''
+    description_clear_config = '''这将会删除配置文件，确定吗？'''
+    description_clear_config_restart = '''配置文件已经被删除，现在重新启动该应用？'''
 
     menu_sleep_now = '立即睡眠'
     menu_display_sleep_now = '立即关闭显示器'

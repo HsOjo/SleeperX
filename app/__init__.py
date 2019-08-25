@@ -121,7 +121,7 @@ class Application(ApplicationBase, ApplicationView):
 
     def callback_menu_disable_lid_sleep(self, sender: rumps.MenuItem):
         if not self.set_lid_sleep(sender.state):
-            self.message_box(sender.title, self.lang.unable_to_pmset)
+            self.message_box(sender.title, self.lang.description_unable_to_pmset)
 
     def inject_menu_value(self):
         # inject value to menu.
@@ -545,3 +545,5 @@ class Application(ApplicationBase, ApplicationView):
     def clear_config(self, sender: rumps.MenuItem):
         if osa_api.alert(sender.title, self.lang.description_clear_config):
             self.config.clear()
+            if osa_api.alert(sender.title, self.lang.description_clear_config_restart):
+                self.restart()

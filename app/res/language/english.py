@@ -63,10 +63,12 @@ More information can found on GitHub "doc/" folder. (such as examples.)''' % Con
     description_welcome_tips_set_account = '''You canceled admin account settings! Disable lid sleep will be invalid. (You can find admin account settings in preferences.)'''
     description_welcome_end = '''Excellent! Now SleeperX will be working.
 Enjoy yourself!'''
-    unable_to_pmset = '''Unable to change "Power Management Settings"!
+    description_unable_to_pmset = '''Unable to change "Power Management Settings"!
 Please check your admin account (username and password) is correct.
 
 If admin account is correct, But always can't do this, You can try to export log (in "Preferences" - "Advanced Options"), and send to this project issues page.'''
+    description_clear_config = '''This action will delete config file, Do it now?'''
+    description_clear_config_restart = '''Config file is deleted now, Restart this application now?'''
 
     menu_sleep_now = 'Sleep Now'
     menu_display_sleep_now = 'Display Sleep Now'
