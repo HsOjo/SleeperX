@@ -61,8 +61,8 @@ More information can found on GitHub "doc/" folder. (such as examples.)''' % Con
     description_welcome_why_need_admin = '''You need to input your administrator account to grant privileges for SleeperX. Because SleeperX will change "Power Management Settings". (Disable Lid Sleep)'''
     description_welcome_is_admin = '''Current user is administrator, skiped the admin username setting. (If you want use other admin account work on SleeperX, You can set it later.)'''
     description_welcome_tips_set_account = '''You canceled admin account settings! Disable lid sleep will be invalid. (You can find admin account settings in preferences.)'''
-    description_welcome_end = '''Excellent! Now SleeperX will be working.
-Enjoy yourself!'''
+    description_welcome_end = '''Excellent! Now %s will be working.
+Enjoy yourself!''' % Const.app_name
     description_unable_to_pmset = '''Unable to change "Power Management Settings"!
 Please check your admin account (username and password) is correct.
 

@@ -60,8 +60,8 @@ class Chinese(English):
     description_welcome_why_need_admin = '''您需要输入管理员帐户以授予SleeperX权限。因为SleeperX会更改“电源管理设置”。（阻止合盖睡眠）'''
     description_welcome_is_admin = '''当前用户是管理员，跳过了管理员用户名设置。（如果要在SleeperX上使用其他管理员帐户工作，可以稍后进行设置。）'''
     description_welcome_tips_set_account = '''您取消了管理帐户设置！禁用合盖睡眠将无法使用。（您可以在偏好设置中找到管理帐户设置。）'''
-    description_welcome_end = '''很好！现在SleeperX可以开始工作了。
-Enjoy yourself!'''
+    description_welcome_end = '''很好！现在 %s 可以开始工作了。
+Enjoy yourself!''' % Const.app_name
     description_unable_to_pmset = '''无法更改“电源管理设置”！
 请检查您的管理员帐户（用户名和密码）是否正确。
 
