@@ -1,3 +1,4 @@
+import threading
 import time
 from threading import Thread
 
@@ -33,6 +34,7 @@ class Application(ApplicationBase, ApplicationView):
         self.idle_time = -1
         # Refresh last time. (check sleep by twice refresh)
         self.refresh_time = None
+        self.wake_time = 0
 
         self.cancel_disable_idle_sleep_time = None
         self.cancel_disable_lid_sleep_time = None
@@ -197,7 +199,7 @@ class Application(ApplicationBase, ApplicationView):
         else:
             self.sleep_idle_time = -1
 
-    def callback_refresh(self, sender: rumps.Timer):
+    def callback_refresh(self):
         try:
             # check long time no refresh sleep.
             refresh_time = time.time()
@@ -263,8 +265,6 @@ class Application(ApplicationBase, ApplicationView):
                         self.callback_charge_status_changed(
                             self.battery_status['status'], battery_status_prev['status'])
 
-                self.refresh_battery_status_view()
-
                 # low battery capacity sleep check
                 if self.config.low_battery_capacity_sleep:
                     if self.battery_status['status'] == 'discharging':
@@ -276,7 +276,6 @@ class Application(ApplicationBase, ApplicationView):
                         if low_battery_capacity or low_time_remaining:
                             self.sleep()
         except:
-            sender.stop()
             self.callback_exception()
 
     def callback_idle_status_changed(self, idle_time: float):
@@ -286,6 +285,11 @@ class Application(ApplicationBase, ApplicationView):
 
     def callback_sleep_waked_up(self, sleep_time: float):
         params = locals()
+
+        if time.time() - self.wake_time < Const.check_sleep_time:
+            return
+        else:
+            self.wake_time = time.time()
 
         self.event_trigger(self.callback_sleep_waked_up, params, self.config.event_sleep_waked_up)
 
@@ -362,7 +366,7 @@ class Application(ApplicationBase, ApplicationView):
 
         system_api.sleep()
 
-        @common.wait_and_check(3600, 0.5)
+        @common.wait_and_check(Const.sleep_ready_time_limit, 0.5)
         def check_ready():
             t = system_api.get_hid_idle_time()
             if t > 0.5:
@@ -477,7 +481,12 @@ class Application(ApplicationBase, ApplicationView):
         if self.config.welcome:
             self.welcome()
 
-        t_refresh = rumps.Timer(self.callback_refresh, 1)
-        t_refresh.start()
+        def t_refresh():
+            while True:
+                self.callback_refresh()
+                time.sleep(1)
+
+        threading.Thread(target=t_refresh).start()
+        rumps.Timer(lambda _: self.refresh_battery_status_view(), 1).start()
 
         super().run()

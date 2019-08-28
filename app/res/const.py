@@ -8,3 +8,4 @@ class Const:
     protector = '[protector]'
     time_options = [300, 600, 1800, '-', 3600, 7200, 10800, '-', 43200, 86400]
     check_sleep_time = 30
+    sleep_ready_time_limit = 3600
