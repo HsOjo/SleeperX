@@ -47,7 +47,7 @@ class Application(ApplicationBase, ApplicationView):
         self.set_menu_callback(self.menu_disable_lid_sleep, callback=self.callback_menu_disable_lid_sleep)
         self.set_menu_callback(self.menu_select_language, callback=lambda _: self.select_language())
         self.set_menu_callback(self.menu_check_update, callback=(
-            lambda sender: Thread(target=self.check_update, args=(sender,)).start()
+            lambda sender: Thread(target=self.check_update, args=(True,)).start()
         ))
         self.set_menu_callback(self.menu_about, callback=lambda _: self.about())
         self.set_menu_callback(self.menu_quit, callback=lambda _: self.quit())
