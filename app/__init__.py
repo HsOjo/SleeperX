@@ -199,6 +199,30 @@ class Application(ApplicationBase, ApplicationView):
         else:
             self.sleep_idle_time = -1
 
+    def callback_refresh_menu(self, sender: rumps.Timer):
+        self.refresh_battery_status_view()
+
+        # cancel after time refresh.
+        if self.cancel_disable_idle_sleep_time is not None:
+            time_remain = self.cancel_disable_idle_sleep_time - time.time()
+            if time_remain <= 0:
+                self.set_idle_sleep(True)
+            else:
+                self.menu_disable_idle_sleep.title = '%s - %s' % (
+                    self.lang.menu_disable_idle_sleep, self.lang.menu_ex_cancel_after_time % (
+                        self.time_convert(time_remain)
+                    ))
+
+        if self.cancel_disable_lid_sleep_time is not None:
+            time_remain = self.cancel_disable_lid_sleep_time - time.time()
+            if time_remain <= 0:
+                self.set_lid_sleep(True)
+            else:
+                self.menu_disable_lid_sleep.title = '%s - %s' % (
+                    self.lang.menu_disable_lid_sleep, self.lang.menu_ex_cancel_after_time % (
+                        self.time_convert(time_remain)
+                    ))
+
     def callback_refresh(self):
         try:
             # check long time no refresh sleep.
@@ -210,26 +234,6 @@ class Application(ApplicationBase, ApplicationView):
                     if idle_time >= Const.check_sleep_time:
                         self.callback_sleep_waked_up(sleep_time)
             self.refresh_time = refresh_time
-
-            # cancel after time refresh.
-            if self.cancel_disable_idle_sleep_time is not None:
-                time_remain = self.cancel_disable_idle_sleep_time - time.time()
-                if time_remain <= 0:
-                    self.set_idle_sleep(True)
-                else:
-                    self.menu_disable_idle_sleep.title = '%s - %s' % (
-                        self.lang.menu_disable_idle_sleep, self.lang.menu_ex_cancel_after_time % (
-                            self.time_convert(time_remain)
-                        ))
-            if self.cancel_disable_lid_sleep_time is not None:
-                time_remain = self.cancel_disable_lid_sleep_time - time.time()
-                if time_remain <= 0:
-                    self.set_lid_sleep(True)
-                else:
-                    self.menu_disable_lid_sleep.title = '%s - %s' % (
-                        self.lang.menu_disable_lid_sleep, self.lang.menu_ex_cancel_after_time % (
-                            self.time_convert(time_remain)
-                        ))
 
             e_lid = self.config.event_lid_status_changed != ''
             e_idle = self.config.event_idle_status_changed != ''
@@ -487,6 +491,6 @@ class Application(ApplicationBase, ApplicationView):
                 time.sleep(1)
 
         threading.Thread(target=t_refresh).start()
-        rumps.Timer(lambda _: self.refresh_battery_status_view(), 1).start()
+        rumps.Timer(self.callback_refresh_menu, 1).start()
 
         super().run()
