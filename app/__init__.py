@@ -220,74 +220,71 @@ class Application(ApplicationBase, ApplicationView):
                     ))
 
     def callback_refresh(self):
-        try:
-            # check long time no refresh sleep.
-            refresh_time = time.time()
-            if self.refresh_time is not None:
-                sleep_time = refresh_time - self.refresh_time
-                if sleep_time >= Const.check_sleep_time:
+        # check long time no refresh sleep.
+        refresh_time = time.time()
+        if self.refresh_time is not None:
+            sleep_time = refresh_time - self.refresh_time
+            if sleep_time >= Const.check_sleep_time:
+                idle_time = system_api.get_hid_idle_time()
+                if idle_time >= Const.check_sleep_time:
+                    self.callback_sleep_waked_up(sleep_time)
+        self.refresh_time = refresh_time
+
+        # cancel after time refresh.
+        if self.cancel_disable_idle_sleep_time is not None:
+            time_remain = self.cancel_disable_idle_sleep_time - time.time()
+            if time_remain <= 0:
+                self.set_idle_sleep(True)
+
+        if self.cancel_disable_lid_sleep_time is not None:
+            time_remain = self.cancel_disable_lid_sleep_time - time.time()
+            if time_remain <= 0:
+                self.set_lid_sleep(True)
+
+        e_lid = self.config.event_lid_status_changed != ''
+        e_idle = self.config.event_idle_status_changed != ''
+
+        if self.menu_disable_lid_sleep.state or e_lid or e_idle:
+            # check lid status
+            lid_stat_prev = self.lid_stat
+            self.lid_stat = system_api.check_lid()
+            if self.lid_stat is not None:
+                if lid_stat_prev is None or lid_stat_prev != self.lid_stat:
+                    self.callback_lid_status_changed(self.lid_stat, lid_stat_prev)
+
+            # check idle sleep (on disable (lid) sleep)
+            if not self.menu_disable_idle_sleep.state or e_idle:
+                self.refresh_sleep_idle_time()
+                if self.sleep_idle_time > 0 or e_idle:
                     idle_time = system_api.get_hid_idle_time()
-                    if idle_time >= Const.check_sleep_time:
-                        self.callback_sleep_waked_up(sleep_time)
-            self.refresh_time = refresh_time
+                    if 0 < self.sleep_idle_time <= idle_time:
+                        self.sleep()
+                    if idle_time < self.idle_time:
+                        if self.idle_time >= self.config.time_idle_event:
+                            self.callback_idle_status_changed(self.idle_time)
+                    self.idle_time = idle_time
 
-            # cancel after time refresh.
-            if self.cancel_disable_idle_sleep_time is not None:
-                time_remain = self.cancel_disable_idle_sleep_time - time.time()
-                if time_remain <= 0:
-                    self.set_idle_sleep(True)
+        # check battery status
+        battery_status_prev = self.battery_status
+        self.battery_status = system_api.battery_status()
+        if self.battery_status is not None:
+            if battery_status_prev is None:
+                self.callback_charge_status_changed(self.battery_status['status'])
+            else:
+                if battery_status_prev['status'] != self.battery_status['status']:
+                    self.callback_charge_status_changed(
+                        self.battery_status['status'], battery_status_prev['status'])
 
-            if self.cancel_disable_lid_sleep_time is not None:
-                time_remain = self.cancel_disable_lid_sleep_time - time.time()
-                if time_remain <= 0:
-                    self.set_lid_sleep(True)
+            # low battery capacity sleep check
+            if self.config.low_battery_capacity_sleep:
+                if self.battery_status['status'] == 'discharging':
+                    low_battery_capacity = self.battery_status['percent'] <= self.config.low_battery_capacity
 
-            e_lid = self.config.event_lid_status_changed != ''
-            e_idle = self.config.event_idle_status_changed != ''
+                    low_time_remaining = self.battery_status['remaining'] is not None \
+                                         and self.battery_status['remaining'] <= self.config.low_time_remaining * 60
 
-            if self.menu_disable_lid_sleep.state or e_lid or e_idle:
-                # check lid status
-                lid_stat_prev = self.lid_stat
-                self.lid_stat = system_api.check_lid()
-                if self.lid_stat is not None:
-                    if lid_stat_prev is None or lid_stat_prev != self.lid_stat:
-                        self.callback_lid_status_changed(self.lid_stat, lid_stat_prev)
-
-                # check idle sleep (on disable (lid) sleep)
-                if not self.menu_disable_idle_sleep.state or e_idle:
-                    self.refresh_sleep_idle_time()
-                    if self.sleep_idle_time > 0 or e_idle:
-                        idle_time = system_api.get_hid_idle_time()
-                        if 0 < self.sleep_idle_time <= idle_time:
-                            self.sleep()
-                        if idle_time < self.idle_time:
-                            if self.idle_time >= self.config.time_idle_event:
-                                self.callback_idle_status_changed(self.idle_time)
-                        self.idle_time = idle_time
-
-            # check battery status
-            battery_status_prev = self.battery_status
-            self.battery_status = system_api.battery_status()
-            if self.battery_status is not None:
-                if battery_status_prev is None:
-                    self.callback_charge_status_changed(self.battery_status['status'])
-                else:
-                    if battery_status_prev['status'] != self.battery_status['status']:
-                        self.callback_charge_status_changed(
-                            self.battery_status['status'], battery_status_prev['status'])
-
-                # low battery capacity sleep check
-                if self.config.low_battery_capacity_sleep:
-                    if self.battery_status['status'] == 'discharging':
-                        low_battery_capacity = self.battery_status['percent'] <= self.config.low_battery_capacity
-
-                        low_time_remaining = self.battery_status['remaining'] is not None \
-                                             and self.battery_status['remaining'] <= self.config.low_time_remaining * 60
-
-                        if low_battery_capacity or low_time_remaining:
-                            self.sleep()
-        except:
-            self.callback_exception()
+                    if low_battery_capacity or low_time_remaining:
+                        self.sleep()
 
     def callback_idle_status_changed(self, idle_time: float):
         params = locals()
@@ -493,9 +490,12 @@ class Application(ApplicationBase, ApplicationView):
             self.welcome()
 
         def t_refresh():
-            while True:
-                self.callback_refresh()
-                time.sleep(1)
+            try:
+                while True:
+                    self.callback_refresh()
+                    time.sleep(1)
+            except:
+                self.callback_exception()
 
         threading.Thread(target=t_refresh).start()
         rumps.Timer(self.callback_refresh_view, 1).start()
