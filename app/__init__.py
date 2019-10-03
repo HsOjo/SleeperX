@@ -11,6 +11,7 @@ from .res.const import Const
 from .res.language import load_language, LANGUAGES
 from .res.language.english import English
 from .util import system_api, osa_api, github, object_convert, log
+from .util.log import Log
 from .util.process_daemon import ProcessDaemon
 from .view.application import ApplicationView
 
@@ -172,7 +173,7 @@ class Application(ApplicationBase, ApplicationView):
         else:
             if self.is_admin:
                 code, out, err = system_api.sudo(command, self.config.password, timeout=self.config.process_timeout)
-                log.append(self.admin_exec, 'Info', {'command': command, 'status': code, 'output': out, 'error': err})
+                Log.append(self.admin_exec, 'Info', {'command': command, 'status': code, 'output': out, 'error': err})
 
         if code != 0:
             return False
@@ -304,7 +305,7 @@ class Application(ApplicationBase, ApplicationView):
     def callback_lid_status_changed(self, status: bool, status_prev: bool = None):
         params = locals()
 
-        log.append(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
+        Log.append(self.callback_lid_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         if status:
             if self.config.screen_save_on_lid:
                 if self.config.short_time_cancel_screen_save:
@@ -316,7 +317,7 @@ class Application(ApplicationBase, ApplicationView):
                     if valid:
                         osa_api.screen_save()
                     else:
-                        log.append('check_lock', 'Info', 'user cancel lock screen.')
+                        Log.append('check_lock', 'Info', 'user cancel lock screen.')
                 else:
                     osa_api.screen_save()
 
@@ -325,7 +326,7 @@ class Application(ApplicationBase, ApplicationView):
     def callback_charge_status_changed(self, status: str, status_prev: str = None):
         params = locals()
 
-        log.append(self.callback_charge_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
+        Log.append(self.callback_charge_status_changed, 'Info', 'from "%s" to "%s"' % (status_prev, status))
         self.refresh_sleep_idle_time()
         if status == 'discharging':
             if self.config.disable_idle_sleep_in_charging:
@@ -388,7 +389,7 @@ class Application(ApplicationBase, ApplicationView):
         # fix callback refresh.
         self.refresh_time = time.time()
         real_sleep_time = time.time() - sleep_begin_time - sleep_ready_time
-        log.append(self.sleep, 'Info',
+        Log.append(self.sleep, 'Info',
                    'sleep_ready_time: %.2fs, real_sleep_time: %.2fs' % (sleep_ready_time, real_sleep_time))
 
         if fix_idle_sleep:

@@ -2,7 +2,7 @@ import os
 import re
 
 from app import common
-from app.util import log
+from app.util.log import Log
 
 
 def battery_status():
@@ -27,7 +27,7 @@ def battery_status():
 
         return info
     except:
-        log.append(battery_status, 'Warning', common.get_exception())
+        Log.append(battery_status, 'Warning', common.get_exception())
         return None
 
 
@@ -135,7 +135,7 @@ def check_admin(username=''):
 
 def sudo(command: str, password: str, timeout=None):
     stat, out, err = common.execute('/usr/bin/sudo -S %s' % (command), '%s\n' % password, timeout)
-    log.append(sudo, 'sudo', locals())
+    Log.append(sudo, 'sudo', locals())
     return stat, out, err
 
 
