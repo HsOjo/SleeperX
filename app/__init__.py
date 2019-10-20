@@ -5,15 +5,15 @@ from threading import Thread
 import rumps
 
 from app import common
-from .base.application import ApplicationBase
-from .config import Config
-from .res.const import Const
-from .res.language import load_language, LANGUAGES
-from .res.language.english import English
-from .util import system_api, osa_api, github, object_convert, log
-from .util.log import Log
-from .util.process_daemon import ProcessDaemon
-from .view.application import ApplicationView
+from app.base.application import ApplicationBase
+from app.config import Config
+from app.res.const import Const
+from app.res.language import load_language, LANGUAGES
+from app.res.language.english import English
+from app.util import system_api, osa_api, github, object_convert, log
+from app.util.log import Log
+from app.util.process_daemon import ProcessDaemon
+from app.view.application import ApplicationView
 
 
 class Application(ApplicationBase, ApplicationView):

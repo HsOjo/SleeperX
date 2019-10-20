@@ -1,5 +1,4 @@
 requests==2.22.0
 rumps==0.3.0
-opencv_python==4.1.0.25
-PyExecJS==1.5.1
 PyInstaller==3.5
+py2app==0.19
