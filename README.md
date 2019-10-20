@@ -44,7 +44,7 @@ pip3 install -r requirements.txt
 * Build
 
 ```bash
-python3 build.py
+python3 build.py [--translate-baidu] [--py2app]
 ```
 
 ## Report Bug
