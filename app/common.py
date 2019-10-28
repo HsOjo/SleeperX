@@ -9,7 +9,7 @@ from subprocess import PIPE, Popen, TimeoutExpired
 def popen(cmd, sys_env=True, **kwargs):
     if sys_env and kwargs.get('env') is not None:
         kwargs['env'] = os.environ.copy().update(kwargs['env'])
-    return Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding='utf-8', **kwargs)
+    return Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE, encoding='utf-8', **kwargs)
 
 
 def execute(cmd, input_str=None, timeout=None, **kwargs):

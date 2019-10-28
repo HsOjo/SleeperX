@@ -24,7 +24,7 @@ class Application(ApplicationBase, ApplicationView):
         self.menu_cat = []
         self.init_menu()
 
-        self.pd_noidle = ProcessDaemon('/usr/bin/pmset noidle')
+        self.pd_noidle = ProcessDaemon(['/usr/bin/pmset', 'noidle'])
 
         self.battery_status = None  # type: dict
         self.lid_stat = None  # type: bool
