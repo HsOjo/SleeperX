@@ -332,7 +332,8 @@ class Application(ApplicationBase, ApplicationView):
             if self.config.disable_idle_sleep_in_charging:
                 self.set_idle_sleep(True)
             if self.config.disable_lid_sleep_in_charging:
-                self.set_lid_sleep(True)
+                if self.set_lid_sleep(True) and self.lid_stat:
+                    self.sleep()
         elif status_prev in [None, 'discharging'] and status in ['not charging', 'charging', 'finishing charge',
                                                                  'charged']:
             if self.config.disable_idle_sleep_in_charging:
