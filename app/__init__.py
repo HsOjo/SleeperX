@@ -41,6 +41,14 @@ class Application(ApplicationBase, ApplicationView):
         self.cancel_disable_lid_sleep_time = None
 
     def bind_menu_callback(self):
+        def conv_to_type(x: str, t):
+            try:
+                return t(x)
+            except:
+                return None
+
+        conv_to_int = lambda x: conv_to_type(x, int)
+
         # menu_application
         self.set_menu_callback(self.menu_sleep_now, callback=lambda _: self.sleep())
         self.set_menu_callback(self.menu_display_sleep_now, callback=lambda _: system_api.sleep(display_only=True))
@@ -57,11 +65,11 @@ class Application(ApplicationBase, ApplicationView):
         self.set_menu_callback(self.menu_set_startup, callback=lambda _: self.set_startup())
         self.set_menu_callback(self.menu_set_low_battery_capacity, callback=(
             self.generate_callback_config_input(
-                'low_battery_capacity', 'description_set_low_battery_capacity', to_int=True)
+                'low_battery_capacity', 'description_set_low_battery_capacity', convertor=conv_to_int)
         ))
         self.set_menu_callback(self.menu_set_low_time_remaining, callback=(
             self.generate_callback_config_input(
-                'low_time_remaining', 'description_set_low_time_remaining', to_int=True)
+                'low_time_remaining', 'description_set_low_time_remaining', convertor=conv_to_int)
         ))
         self.set_menu_callback(self.menu_disable_idle_sleep_in_charging,
                                callback=self.generate_callback_switch_config('disable_idle_sleep_in_charging'))
