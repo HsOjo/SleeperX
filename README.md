@@ -6,6 +6,8 @@ Auto disable sleep on use AC power.
 
 And it can disable idle sleep or lid sleep!
 
+> This program can work normally in **macOS 10.14/10.15/11**. 
+
 * Multiple language support ! ! !
   * English
   * Simple Chinese
@@ -24,8 +26,6 @@ And it can disable idle sleep or lid sleep!
 Base on above contents, You can free to extend this program.
 
 Example: Take photo on open lid. (example code on folder "/docs/".)
-
-This program can work normally in **macOS 10.14/10.15**. (Tested on MacBook Pro early 2015)
 
 ![Thumbnail](docs/img/thumbnail_en.png)
 
