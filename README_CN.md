@@ -1,57 +1,53 @@
 # SleeperX
 
-在低电量时自动睡眠。（Hackintosh特性）
+面向黑苹果用户的原生 macOS 菜单栏电源/睡眠管理工具。
 
-在接通电源时，可以自动禁止睡眠。
+* 低电量时自动睡眠。
+* 接通电源时自动禁止睡眠。
+* 随时禁用闲置睡眠或合盖睡眠（支持定时自动取消）。
+* 合盖时锁屏。
 
-并且可以随意关闭闲置睡眠或合盖睡眠。
+事件驱动（IOKit / NSWorkspace 通知），PyObjC 原生实现，不再轮询。
 
-> 这个程序可以在**macOS 10.14/10.15/11**正常运行。
+> 需要 **macOS 10.12 (Sierra) 或更高版本**。
 
-* 多语言支持 ！！！
+* 多语言支持：
   * 英文
   * 简体中文
   * 繁体中文
-  * 日文（翻译）
-  * 韩文（翻译）
+  * 日文
+  * 韩文
 
-* 事件回调支持执行自定义程序！！！
-  * 空闲状态改变
-  * 合盖状态改变
-  * 充电状态改变
-  * 睡眠唤醒
+## 特权助手
 
-* 支持定时取消阻止睡眠。
-
-基于以上内容，你可以自由地扩展这个程序。
-
-例如：在打开盖子时拍照。（示例代码在 "/docs" 目录下）
-
-![预览图](docs/img/thumbnail_cn.png)
+禁用合盖睡眠与修改睡眠（休眠）模式需要 root 权限，因为 `pmset -a disablesleep` /
+`hibernatemode` 没有公开的 IOKit 等价接口。首次使用这些功能时，SleeperX 会安装一个经典
+LaunchDaemon 助手。你只需**一次**输入管理员密码授权（不会存储任何密码）。助手仅执行固定、
+白名单内的 `pmset` 命令，并通过 socket 权限与连入方 uid 校验加以限制。其余操作（整机睡眠、
+息屏、禁用空闲睡眠）都无需 root。
 
 ## 下载
 
-请查看[Releases页面](../../releases)。
+请查看 [Releases 页面](../../releases)。
+
+## 首次打开（未签名应用）
+
+SleeperX 以未签名方式分发。首次启动时 Gatekeeper 会拒绝打开。可以**右键点击应用 → 打开**，
+或清除隔离属性：
+
+```bash
+xattr -dr com.apple.quarantine /Applications/SleeperX.app
+```
 
 ## 如何构建
 
-* 安装依赖包
+需要 Python 3.12 与 [uv](https://docs.astral.sh/uv/)。
 
 ```bash
-pip3 install -r requirements.txt
+uv sync --extra build
+uv run python build.py                   # 产出 dist/SleeperX.app 与 dist/SleeperX-<version>.zip
 ```
 
-* 构建
+## 提交 Bug
 
-```bash
-python3 build.py [--translate-baidu] [--py2app]
-```
-
-
-## 提交Bug
-
-如果你在这个应用遇到问题，您可以尝试导出日志（在“偏好设置”-“高级选项”），并发送到这个项目的 issues 页面。
-
-这将会导出日志文件到目录，你的隐私数据将会被屏蔽文字所替换。
-
-下一步，你可以将这个日志文件发送到这个项目的GitHub页面的issues。
+导出日志（偏好设置 → 高级选项），并附到 GitHub issue。导出的日志会屏蔽隐私数据。

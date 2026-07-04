@@ -1,56 +1,56 @@
 # SleeperX
 
-Auto sleep on low battery capacity. (Hackintosh Feature)
+Native macOS menubar power/sleep manager for Hackintosh users.
 
-Auto disable sleep on use AC power.
+* Auto sleep on low battery capacity.
+* Auto disable sleep while on AC power.
+* Disable idle sleep or lid sleep on demand (with timed auto-cancel).
+* Lock the screen when the lid closes.
 
-And it can disable idle sleep or lid sleep!
+Event-driven (IOKit / NSWorkspace notifications), PyObjC-native, no polling.
 
-> This program can work normally in **macOS 10.14/10.15/11**. 
+> Requires **macOS 10.12 (Sierra) or later**.
 
-* Multiple language support ! ! !
+* Multiple language support:
   * English
-  * Simple Chinese
-  * Tradtional Chinese
-  * Japanese (By Translater)
-  * Korean (By Translater)
+  * Simplified Chinese
+  * Traditional Chinese
+  * Japanese
+  * Korean
 
-* Events callback execute custom program support !!!
-  * Idle Status Change
-  * Lid Status Change
-  * Charge Status Change
-  * Sleep Waked Up
+## Privileged helper
 
-* Support cancel disable sleep after any times.
-
-Base on above contents, You can free to extend this program.
-
-Example: Take photo on open lid. (example code on folder "/docs/".)
-
-![Thumbnail](docs/img/thumbnail_en.png)
+Disabling lid sleep and changing the sleep (hibernate) mode require root, because
+`pmset -a disablesleep` / `hibernatemode` have no public IOKit equivalent. SleeperX
+installs a classic LaunchDaemon helper the first time you use these features. You
+authorize it **once** with an admin password (nothing is stored). The helper only
+runs a fixed, whitelisted set of `pmset` commands, gated by socket permissions and a
+peer-uid check. Everything else (whole-machine sleep, display sleep, idle-sleep
+prevention) runs without root.
 
 ## Downloads
 
-Please view [Releases Page](../../releases).
+Please see the [Releases Page](../../releases).
 
-## How To Build
+## First open (unsigned app)
 
-* Install Requirement.
-
-```bash
-pip3 install -r requirements.txt
-```
-
-* Build
+SleeperX is distributed unsigned. On first launch Gatekeeper will refuse to open it.
+Either **right-click the app → Open**, or clear the quarantine flag:
 
 ```bash
-python3 build.py [--translate-baidu] [--py2app]
+xattr -dr com.apple.quarantine /Applications/SleeperX.app
 ```
 
-## Report Bug
+## How to build
 
-If you meet some bug in this app, You can try to export log (in "Preferences" - "Advanced Options"), and send to this project issues page.
+Requires Python 3.12 and [uv](https://docs.astral.sh/uv/).
 
-It will be export log file to directory, your private data will replace with hider text.
+```bash
+uv sync --extra build
+uv run python build.py                   # produces dist/SleeperX.app and dist/SleeperX-<version>.zip
+```
 
-And the next step, you can send this log file on this project' s GitHub page issues.
+## Report a bug
+
+Export the log (Preferences → Advanced Options), then attach it to a GitHub issue.
+Private data is masked in the exported log.

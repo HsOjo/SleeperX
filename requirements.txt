@@ -1,4 +1,0 @@
-requests
-rumps
-PyInstaller
-py2app
