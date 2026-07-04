@@ -59,6 +59,9 @@ GitHub 프로젝트 페이지를 열까요?'''
 참고: 이 앱은 서명되지 않았습니다. macOS가 차단하면 앱을 오른쪽 클릭하여
 "열기"를 한 번 선택하세요.'''
 
+    description_welcome_end = f'''훌륭합니다! 이제 {Const.app_name}가 작동합니다.
+즐기세요!'''
+
     menu_sleep_now = '지금 절전'
     menu_display_sleep_now = '지금 디스플레이 끄기'
     menu_disable_lid_sleep = '덮개 절전 비활성화'

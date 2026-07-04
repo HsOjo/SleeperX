@@ -59,6 +59,9 @@ GitHub プロジェクトページを開きますか？'''
 注意：このアプリは署名されていません。macOS にブロックされた場合は、
 アプリを右クリックして「開く」を選んでください。'''
 
+    description_welcome_end = f'''素晴らしい！{Const.app_name} が動作を開始しました。
+お楽しみください！'''
+
     menu_sleep_now = '今すぐスリープ'
     menu_display_sleep_now = 'ディスプレイをオフ'
     menu_disable_lid_sleep = '閉じたときのスリープを無効化'

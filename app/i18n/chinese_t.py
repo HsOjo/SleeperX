@@ -70,6 +70,9 @@ class TraditionalChinese(Chinese):
 
 注意：本應用程式未簽章。若被 macOS 攔截，請右鍵點擊應用程式並選擇“打開”。'''
 
+    description_welcome_end = f'''很好！現在 {Const.app_name} 可以開始工作了。
+Enjoy yourself!'''
+
     menu_sleep_now = '立即睡眠'
     menu_display_sleep_now = '立即關閉顯示幕'
     menu_disable_lid_sleep = '阻止閤蓋睡眠'

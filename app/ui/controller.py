@@ -135,6 +135,7 @@ class Controller:
 
     def _welcome(self) -> None:
         self.dialogs.info(self.lang.title_welcome, self.lang.description_welcome)
+        self.dialogs.info(self.lang.title_welcome, self.lang.description_welcome_end)
 
     def _on_main(self, block) -> None:
         """Run a block on the main thread (AppKit UI must happen there).

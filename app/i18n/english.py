@@ -73,6 +73,9 @@ Advanced Options.
 Note: this app is unsigned. If macOS blocks it, right-click the app and choose
 "Open" once.'''
 
+    description_welcome_end = f'''Excellent! {Const.app_name} is now working.
+Enjoy!'''
+
     menu_sleep_now = 'Sleep Now'
     menu_display_sleep_now = 'Display Sleep Now'
     menu_disable_lid_sleep = 'Disable Lid Sleep'

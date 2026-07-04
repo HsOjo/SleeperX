@@ -69,6 +69,9 @@ class Chinese(English):
 
 注意：本应用未签名。若被 macOS 拦截，请右键点击应用并选择“打开”。'''
 
+    description_welcome_end = f'''很好！现在 {Const.app_name} 可以开始工作了。
+Enjoy yourself!'''
+
     menu_sleep_now = '立即睡眠'
     menu_display_sleep_now = '立即关闭显示器'
     menu_disable_lid_sleep = '阻止合盖睡眠'
