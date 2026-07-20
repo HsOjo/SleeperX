@@ -30,7 +30,6 @@ def test_check_update_shows_checking_in_menu():
         published_at='2026-01-01 00:00:00',
         html_url='https://example.com',
         body='',
-        download_url=None,
     )
     started = []
     original_start = threading.Thread.start
@@ -64,7 +63,6 @@ def test_check_update_no_update_shows_latest_dialog():
         published_at='2026-01-01 00:00:00',
         html_url='https://example.com',
         body='',
-        download_url=None,
     )
     controller._show_update_result(release, False)
     controller.statusbar.set_title.assert_called_once_with(
@@ -85,7 +83,6 @@ def test_check_update_new_version_shows_update_dialog():
         published_at='2026-01-01 00:00:00',
         html_url='https://example.com',
         body='release notes',
-        download_url=None,
     )
     controller._show_update_result(release, True)
     controller.statusbar.set_title.assert_called_once_with(
@@ -101,21 +98,20 @@ def test_check_update_new_version_shows_update_dialog():
     assert controller.lang.noti_update_star in text
 
 
-def test_check_update_new_version_opens_download_url():
+def test_check_update_new_version_opens_release_page():
     controller = _make_controller()
     release = Release(
         name='v99.0.0',
         tag_name='v99.0.0',
         published_at='2026-01-01 00:00:00',
-        html_url='https://example.com',
+        html_url='https://example.com/release',
         body='',
-        download_url='https://example.com/download.zip',
     )
     with patch('app.ui.controller.NSWorkspace') as mock_ws:
         controller._show_update_result(release, True)
         mock_ws.sharedWorkspace.return_value.openURL_.assert_called_once()
         url_arg = mock_ws.sharedWorkspace.return_value.openURL_.call_args[0][0]
-        assert str(url_arg) == release.download_url
+        assert str(url_arg) == release.html_url
 
 
 def test_check_update_network_error_shows_error_dialog():

@@ -11,6 +11,7 @@ requires-python = ">=3.12"
 license = { file = "LICENSE" }
 authors = [{ name = "HsOjo" }]
 dependencies = [
+    "beautifulsoup4>=4.12",
     "pyobjc-framework-Cocoa>=10.0",
     "pyobjc-framework-Quartz>=10.0",
     "requests>=2.31",

@@ -422,9 +422,8 @@ class Controller:
                 f'{self.lang.noti_update_star}\n\n'
                 f'{Const.releases_url}')
             self.dialogs.info(title, message)
-            if release.download_url:
-                NSWorkspace.sharedWorkspace().openURL_(
-                    NSURL.URLWithString_(release.download_url))
+            NSWorkspace.sharedWorkspace().openURL_(
+                NSURL.URLWithString_(release.html_url))
         else:
             message = f'{self.lang.noti_update_none}\n{self.lang.noti_update_star}'
             self.dialogs.info(self.lang.menu_check_update, message)

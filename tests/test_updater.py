@@ -25,24 +25,36 @@ def test_compare_version(current, latest, expected):
 
 def _fake_release_response(tag: str):
     resp = MagicMock()
-    resp.json.return_value = {
-        'name': tag,
-        'tag_name': tag,
-        'published_at': '2026-01-01T00:00:00Z',
-        'html_url': 'https://example.com',
-        'body': 'notes',
-        'assets': [{'browser_download_url': 'https://example.com/app.zip'}],
-    }
+    resp.text = f'''<html><body>
+<section>
+  <a href="/{updater.Const.author}/{updater.Const.app_name}/releases/tag/{tag}">SleeperX {tag}</a>
+  <relative-time datetime="2026-01-01T00:00:00Z"></relative-time>
+  <div class="markdown-body">notes</div>
+</section>
+</body></html>'''
     resp.raise_for_status = MagicMock()
     return resp
 
 
-def test_get_latest_release_parses_response():
+def test_get_latest_release_parses_page():
     with patch('app.core.updater.requests.get', return_value=_fake_release_response('v2.0.1')):
         release = updater.get_latest_release()
     assert release.tag_name == 'v2.0.1'
+    assert release.name == 'SleeperX v2.0.1'
     assert release.published_at == '2026-01-01 00:00:00'
-    assert release.download_url == 'https://example.com/app.zip'
+    assert release.html_url == (
+        f'https://github.com/{updater.Const.author}/{updater.Const.app_name}'
+        '/releases/tag/v2.0.1')
+    assert release.body == 'notes'
+
+
+def test_get_latest_release_no_tag_raises():
+    resp = MagicMock()
+    resp.text = '<html><body><p>No releases</p></body></html>'
+    resp.raise_for_status = MagicMock()
+    with patch('app.core.updater.requests.get', return_value=resp):
+        with pytest.raises(ValueError):
+            updater.get_latest_release()
 
 
 def test_check_update_returns_have_new():
