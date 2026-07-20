@@ -58,14 +58,14 @@ def test_get_latest_release_no_tag_raises():
 
 
 def test_check_update_returns_have_new():
-    with patch('app.core.updater.requests.get', return_value=_fake_release_response('v2.0.1')):
+    with patch('app.core.updater.requests.get', return_value=_fake_release_response('v99.0.0')):
         release, have_new = updater.check_update()
     assert release is not None
     assert have_new is True
 
 
 def test_check_update_respects_current_version():
-    with patch('app.core.updater.requests.get', return_value=_fake_release_response('v2.0.0')):
+    with patch('app.core.updater.requests.get', return_value=_fake_release_response('v0.0.1')):
         release, have_new = updater.check_update()
     assert release is not None
     assert have_new is False

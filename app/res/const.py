@@ -4,7 +4,7 @@ import os
 class Const:
     author = 'HsOjo'
     app_name = 'SleeperX'
-    version = '2.0.0'
+    version = '2.1.0'
 
     # Reverse-DNS identifiers (used by launchd / config path).
     # Kept all-lower-case for consistency.
