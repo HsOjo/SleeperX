@@ -13,7 +13,6 @@ import plistlib
 import shutil
 import subprocess
 import sys
-from zipfile import ZipFile, ZIP_DEFLATED
 
 from app.res.const import Const
 
@@ -66,12 +65,13 @@ def _patch_info_plist():
 
 def _zip():
     zip_path = os.path.join(DIST, f'{Const.app_name}-{Const.version}.zip')
-    base = os.path.dirname(APP_PATH)
-    with ZipFile(zip_path, 'w', ZIP_DEFLATED) as zf:
-        for dirpath, _, files in os.walk(APP_PATH):
-            for name in files:
-                full = os.path.join(dirpath, name)
-                zf.write(full, os.path.relpath(full, base))
+    # ditto preserves symlinks, resource forks and applies .app-aware pkzip
+    # rules; zipfile would silently follow/drop symlinks (e.g. PyInstaller's
+    # python3.12 -> python3__dot__12 dir link), breaking the frozen app.
+    subprocess.run(
+        ['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent',
+         APP_PATH, zip_path],
+        check=True)
     print(f'Wrote {zip_path}')
 
 
