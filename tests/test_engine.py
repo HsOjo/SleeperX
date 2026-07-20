@@ -140,6 +140,8 @@ class FakeUI:
         self.battery = None
         self.idle_disabled = None
         self.lid_disabled = None
+        self.idle_countdown = 'unset'
+        self.lid_countdown = 'unset'
 
     def set_battery_view(self, percent, status, remaining):
         self.battery = (percent, status, remaining)
@@ -151,10 +153,10 @@ class FakeUI:
         self.lid_disabled = disabled
 
     def set_idle_cancel_countdown(self, seconds):
-        pass
+        self.idle_countdown = seconds
 
     def set_lid_cancel_countdown(self, seconds):
-        pass
+        self.lid_countdown = seconds
 
 
 class NullLogger:
@@ -298,3 +300,101 @@ def test_set_lid_sleep_available_true_enables():
     assert e.lid_sleep_disabled is False
     assert e._fakes['priv'].disable_sleep is False
     assert e._fakes['ui'].lid_disabled is False
+
+
+def _wait_restore(engine, attr, timeout=5.0):
+    """Wait for sleep()'s restore thread to re-disable the given block."""
+    import time
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if getattr(engine, attr):
+            return True
+        time.sleep(0.05)
+    return False
+
+
+def test_sleep_preserves_idle_countdown():
+    e = make_engine(Config(low_battery_capacity_sleep=False),
+                    BatteryStatus(90, 'discharging', 100 * 60))
+    e.start()
+    e.schedule_cancel_idle(300)
+    assert e.cancel_disable_idle_sleep_time is not None
+    assert e.idle_sleep_disabled is True
+
+    e.sleep()
+    # Temporarily lifted: block released and timer cleared.
+    assert e.idle_sleep_disabled is False
+    assert e.cancel_disable_idle_sleep_time is None
+
+    assert _wait_restore(e, 'idle_sleep_disabled')
+    # Restore must bring back both the block and the countdown timer.
+    assert e._fakes['sleep_ctl'].idle_prevented is True
+    assert e.cancel_disable_idle_sleep_time is not None
+    assert e._fakes['ui'].idle_countdown is not None
+
+    # The timer must still fire after restore.
+    e._fakes['clock'].advance(400)
+    e.tick()
+    assert e.cancel_disable_idle_sleep_time is None
+    assert e.idle_sleep_disabled is False
+    assert e._fakes['sleep_ctl'].idle_prevented is False
+
+
+def test_sleep_preserves_lid_countdown():
+    e = make_engine(Config(low_battery_capacity_sleep=False),
+                    BatteryStatus(90, 'discharging', 100 * 60), installed=True)
+    e.start()
+    e.schedule_cancel_lid(300)
+    assert e.cancel_disable_lid_sleep_time is not None
+    assert e.lid_sleep_disabled is True
+
+    e.sleep()
+    assert e.lid_sleep_disabled is False
+    assert e.cancel_disable_lid_sleep_time is None
+
+    assert _wait_restore(e, 'lid_sleep_disabled')
+    assert e._fakes['priv'].disable_sleep is True
+    assert e.cancel_disable_lid_sleep_time is not None
+    assert e._fakes['ui'].lid_countdown is not None
+
+    e._fakes['clock'].advance(400)
+    e.tick()
+    assert e.cancel_disable_lid_sleep_time is None
+    assert e.lid_sleep_disabled is False
+    assert e._fakes['priv'].disable_sleep is False
+
+
+def test_idle_compensation_preserves_lid_countdown():
+    """Lid countdown must survive the idle-compensation auto-sleep."""
+    e = make_engine(Config(low_battery_capacity_sleep=False),
+                    BatteryStatus(90, 'discharging', 100 * 60), installed=True)
+    e.start()
+    e.schedule_cancel_lid(300)
+    e._fakes['idle'].seconds = 2000
+    e._fakes['sleep_ctl'].timeout = 1200
+
+    e.tick()  # idle past timeout -> auto sleep() -> restore thread
+    assert e._fakes['sleep_ctl'].slept >= 1
+
+    assert _wait_restore(e, 'lid_sleep_disabled')
+    assert e.cancel_disable_lid_sleep_time is not None
+
+    # After the original timer expires, lid sleep must actually be re-enabled.
+    e._fakes['clock'].advance(400)
+    e.tick()
+    assert e.cancel_disable_lid_sleep_time is None
+    assert e.lid_sleep_disabled is False
+    assert e._fakes['priv'].disable_sleep is False
+
+
+def test_set_lid_sleep_keeps_countdown_ui_when_disabling():
+    """Enabling the lid block must not wipe an active countdown display."""
+    e = make_engine(Config(low_battery_capacity_sleep=False),
+                    BatteryStatus(90, 'discharging', 100 * 60), installed=True)
+    e.start()
+    e.schedule_cancel_lid(300)
+    assert e._fakes['ui'].lid_countdown == 300
+
+    # Re-disabling (e.g. charge-status change) must leave the countdown intact.
+    e.set_lid_sleep(False)
+    assert e._fakes['ui'].lid_countdown == 300

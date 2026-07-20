@@ -201,6 +201,10 @@ class Engine:
         with self._state_lock:
             fix_idle = self.idle_sleep_disabled
             fix_lid = self.lid_sleep_disabled
+            # set_*_sleep(True) clears the cancel-timers; save them so the
+            # countdown survives this temporary lift and still fires later.
+            saved_idle_cancel = self.cancel_disable_idle_sleep_time
+            saved_lid_cancel = self.cancel_disable_lid_sleep_time
 
         if fix_idle:
             self.set_idle_sleep(True)
@@ -218,6 +222,19 @@ class Engine:
                     self.set_idle_sleep(False)
                 if fix_lid:
                     self.set_lid_sleep(False)
+                # The cancel-timers use wall-clock timestamps, which keep ticking
+                # while the machine is asleep; restoring them as-is means a timer
+                # that expired during sleep is picked up by the next tick().
+                if saved_idle_cancel is not None:
+                    with self._state_lock:
+                        self.cancel_disable_idle_sleep_time = saved_idle_cancel
+                    self.ui.set_idle_cancel_countdown(
+                        max(saved_idle_cancel - self.clock(), 0))
+                if saved_lid_cancel is not None:
+                    with self._state_lock:
+                        self.cancel_disable_lid_sleep_time = saved_lid_cancel
+                    self.ui.set_lid_cancel_countdown(
+                        max(saved_lid_cancel - self.clock(), 0))
 
             threading.Thread(target=restore, daemon=True).start()
         return True
@@ -243,7 +260,8 @@ class Engine:
                 self.lid_sleep_disabled = disabled
                 if available:
                     self.cancel_disable_lid_sleep_time = None
-            self.ui.set_lid_cancel_countdown(None)
+            if available:
+                self.ui.set_lid_cancel_countdown(None)
         with self._state_lock:
             current_disabled = self.lid_sleep_disabled
         self.ui.set_lid_sleep_disabled(current_disabled)
